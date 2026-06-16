@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "ResQ",
+    "subtitle": "Smart First Aid Case",
+    "host": "0.0.0.0",
+    "port": 8080,
+    "kiosk": true
+  },
+  "logging": {
+    "file": "logs/resq.log"
+  },
+  "hardware": {
+    "mode": "simulated",
+    "buttons": {
+      "yes": ["y", "s"],
+      "no": ["n"],
+      "back": ["Escape", "Backspace"],
+      "repeat_audio": ["r"],
+      "home_emergency": [" ", "h"]
+    }
+  }
+}
+

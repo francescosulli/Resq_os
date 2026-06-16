@@ -1,0 +1,99 @@
+{
+  "id": "unconscious",
+  "order": 1,
+  "title": "Persona incosciente",
+  "disclaimer": "Protocollo dimostrativo: non sostituisce formazione, 112 o personale sanitario.",
+  "first_step": "demo_notice",
+  "steps": [
+    {
+      "id": "demo_notice",
+      "type": "instruction",
+      "instruction": "Protocollo dimostrativo. Se la situazione e' grave o incerta, chiama il 112.",
+      "next": "scene_safety",
+      "action_label": "Continua"
+    },
+    {
+      "id": "scene_safety",
+      "type": "instruction",
+      "instruction": "Avvicinati solo se la scena e' sicura. Prepara la protezione personale.",
+      "next": "gloves",
+      "action_label": "Prepara guanti"
+    },
+    {
+      "id": "gloves",
+      "type": "item",
+      "instruction": "Indossa guanti monouso prima di prestare assistenza.",
+      "item": {
+        "name": "Guanti monouso",
+        "compartment": "Vano protezione",
+        "nfc_tag": "gloves"
+      },
+      "next": "check_response"
+    },
+    {
+      "id": "check_response",
+      "type": "question",
+      "instruction": "Parla con voce chiara e osserva la reazione.",
+      "question": "La persona risponde se chiamata?",
+      "answers": {
+        "yes": "responsive",
+        "no": "call_112"
+      }
+    },
+    {
+      "id": "responsive",
+      "type": "instruction",
+      "instruction": "Mantieni la persona tranquilla e valuta altri sintomi. Se peggiora, chiama il 112.",
+      "next": "thermal_blanket",
+      "action_label": "Continua"
+    },
+    {
+      "id": "call_112",
+      "type": "instruction",
+      "instruction": "Chiama immediatamente il 112 e segui le indicazioni dell'operatore.",
+      "next": "check_breathing",
+      "action_label": "Ho chiamato"
+    },
+    {
+      "id": "check_breathing",
+      "type": "question",
+      "instruction": "Osserva se il torace si muove e ascolta il respiro senza perdere tempo.",
+      "question": "La persona respira normalmente?",
+      "answers": {
+        "yes": "recovery_position",
+        "no": "cpr"
+      }
+    },
+    {
+      "id": "recovery_position",
+      "type": "instruction",
+      "instruction": "Se non sospetti trauma, mettila in posizione laterale di sicurezza e continua a monitorare.",
+      "next": "thermal_blanket",
+      "action_label": "Continua"
+    },
+    {
+      "id": "cpr",
+      "type": "instruction",
+      "instruction": "Inizia RCP solo se sei formato e segui le istruzioni del 112.",
+      "next": "thermal_blanket",
+      "action_label": "Continua"
+    },
+    {
+      "id": "thermal_blanket",
+      "type": "item",
+      "instruction": "Proteggi la persona dal freddo durante l'attesa dei soccorsi.",
+      "item": {
+        "name": "Coperta isotermica",
+        "compartment": "Vano coperta",
+        "nfc_tag": "thermal_blanket"
+      },
+      "next": "end"
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "instruction": "Protocollo dimostrativo completato. Continua a monitorare e segui il 112.",
+      "summary": "Gestione persona incosciente completata in modalita' demo."
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "bleeding",
+  "order": 2,
+  "title": "Sanguinamento",
+  "disclaimer": "Protocollo dimostrativo: non sostituisce formazione, 112 o personale sanitario.",
+  "first_step": "demo_notice",
+  "steps": [
+    {
+      "id": "demo_notice",
+      "type": "instruction",
+      "instruction": "Protocollo dimostrativo. Se il sanguinamento e' grave, chiama il 112.",
+      "next": "heavy_question",
+      "action_label": "Continua"
+    },
+    {
+      "id": "heavy_question",
+      "type": "question",
+      "instruction": "Osserva la ferita senza ritardare la richiesta di aiuto se la situazione e' seria.",
+      "question": "Il sanguinamento e' abbondante?",
+      "answers": {
+        "yes": "gloves",
+        "no": "minor_instruction"
+      }
+    },
+    {
+      "id": "gloves",
+      "type": "item",
+      "instruction": "Indossa i guanti prima di applicare pressione.",
+      "item": {
+        "name": "Guanti monouso",
+        "compartment": "Vano protezione",
+        "nfc_tag": "gloves"
+      },
+      "next": "gauze"
+    },
+    {
+      "id": "gauze",
+      "type": "item",
+      "instruction": "Prepara garze sterili per proteggere la ferita.",
+      "item": {
+        "name": "Garze sterili",
+        "compartment": "Vano garze",
+        "nfc_tag": "sterile_gauze"
+      },
+      "next": "bandage"
+    },
+    {
+      "id": "bandage",
+      "type": "item",
+      "instruction": "Prepara una benda per mantenere la medicazione in posizione.",
+      "item": {
+        "name": "Benda",
+        "compartment": "Vano bende",
+        "nfc_tag": "bandage"
+      },
+      "next": "direct_pressure"
+    },
+    {
+      "id": "direct_pressure",
+      "type": "instruction",
+      "instruction": "Applica pressione diretta sulla ferita e mantieni il contatto con il 112 se necessario.",
+      "next": "end",
+      "action_label": "Fine"
+    },
+    {
+      "id": "minor_instruction",
+      "type": "instruction",
+      "instruction": "Proteggi la ferita secondo disponibilita' e monitora l'evoluzione.",
+      "next": "plaster",
+      "action_label": "Prendi presidio"
+    },
+    {
+      "id": "plaster",
+      "type": "item",
+      "instruction": "Usa garza o cerotto per coprire una ferita minore.",
+      "item": {
+        "name": "Cerotto o garza",
+        "compartment": "Vano medicazioni",
+        "nfc_tag": "plaster_gauze"
+      },
+      "next": "end"
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "instruction": "Protocollo dimostrativo completato. Monitora la persona e chiedi aiuto se peggiora.",
+      "summary": "Gestione sanguinamento completata in modalita' demo."
+    }
+  ]
+}

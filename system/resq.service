@@ -1,0 +1,18 @@
+[Unit]
+Description=ResQ smart first aid case
+After=network-online.target graphical.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Modifica User= con l'utente Linux corretto del Raspberry se install.sh non lo imposta.
+User=CHANGE_ME
+WorkingDirectory=/opt/resq
+Environment=DISPLAY=:0
+ExecStart=/opt/resq/.venv/bin/python /opt/resq/main.py --host 127.0.0.1 --port 8080 --kiosk
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
+

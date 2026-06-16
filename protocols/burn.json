@@ -1,0 +1,57 @@
+{
+  "id": "burn",
+  "order": 3,
+  "title": "Ustione",
+  "disclaimer": "Protocollo dimostrativo: non sostituisce formazione, 112 o personale sanitario.",
+  "first_step": "demo_notice",
+  "steps": [
+    {
+      "id": "demo_notice",
+      "type": "instruction",
+      "instruction": "Protocollo dimostrativo. Se l'ustione e' grave o sei in dubbio, chiama il 112.",
+      "next": "severity_question",
+      "action_label": "Continua"
+    },
+    {
+      "id": "severity_question",
+      "type": "question",
+      "instruction": "Valuta rapidamente sede ed estensione senza toccare inutilmente la zona.",
+      "question": "L'ustione e' estesa o coinvolge volto, mani, genitali o vie respiratorie?",
+      "answers": {
+        "yes": "call_112",
+        "no": "cooling"
+      }
+    },
+    {
+      "id": "call_112",
+      "type": "instruction",
+      "instruction": "Chiama il 112 e segui le indicazioni dell'operatore.",
+      "next": "cooling",
+      "action_label": "Continua"
+    },
+    {
+      "id": "cooling",
+      "type": "instruction",
+      "instruction": "Raffredda con acqua corrente se disponibile, senza ritardare la chiamata al 112 quando necessaria.",
+      "next": "sterile_cover",
+      "action_label": "Prendi presidio"
+    },
+    {
+      "id": "sterile_cover",
+      "type": "item",
+      "instruction": "Copri con materiale sterile non aderente o telo sterile secondo disponibilita'.",
+      "item": {
+        "name": "Garza sterile non aderente o telo sterile",
+        "compartment": "Vano sterili",
+        "nfc_tag": "sterile_cover"
+      },
+      "next": "end"
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "instruction": "Protocollo dimostrativo completato. Continua a monitorare e chiedi aiuto se la situazione cambia.",
+      "summary": "Gestione ustione completata in modalita' demo."
+    }
+  ]
+}

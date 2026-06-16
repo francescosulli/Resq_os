@@ -1,0 +1,74 @@
+{
+  "id": "trauma",
+  "order": 4,
+  "title": "Trauma / frattura",
+  "disclaimer": "Protocollo dimostrativo: non sostituisce formazione, 112 o personale sanitario.",
+  "first_step": "demo_notice",
+  "steps": [
+    {
+      "id": "demo_notice",
+      "type": "instruction",
+      "instruction": "Protocollo dimostrativo. Evita movimenti inutili e chiama aiuto se la situazione e' seria.",
+      "next": "movement_question",
+      "action_label": "Continua"
+    },
+    {
+      "id": "movement_question",
+      "type": "question",
+      "instruction": "Osserva l'arto senza forzare movimenti.",
+      "question": "La persona riesce a muovere l'arto senza dolore intenso?",
+      "answers": {
+        "yes": "monitor",
+        "no": "immobilize"
+      }
+    },
+    {
+      "id": "monitor",
+      "type": "instruction",
+      "instruction": "Mantieni la persona tranquilla, limita gli sforzi e monitora il dolore.",
+      "next": "bleeding_question",
+      "action_label": "Continua"
+    },
+    {
+      "id": "immobilize",
+      "type": "instruction",
+      "instruction": "Immobilizza quanto possibile senza forzare e chiama aiuto.",
+      "next": "triangular_bandage",
+      "action_label": "Prendi presidio"
+    },
+    {
+      "id": "triangular_bandage",
+      "type": "item",
+      "instruction": "Prepara un supporto morbido per limitare il movimento.",
+      "item": {
+        "name": "Benda triangolare o telo",
+        "compartment": "Vano supporti",
+        "nfc_tag": "triangular_bandage"
+      },
+      "next": "bleeding_question"
+    },
+    {
+      "id": "bleeding_question",
+      "type": "question",
+      "instruction": "Controlla se e' presente sanguinamento associato.",
+      "question": "C'e' sanguinamento associato?",
+      "answers": {
+        "yes": "bleeding_redirect",
+        "no": "end"
+      }
+    },
+    {
+      "id": "bleeding_redirect",
+      "type": "instruction",
+      "instruction": "Passa al protocollo Sanguinamento o chiedi supporto al 112 se il sanguinamento e' importante.",
+      "next": "end",
+      "action_label": "Fine"
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "instruction": "Protocollo dimostrativo completato. Continua a monitorare e limita i movimenti.",
+      "summary": "Gestione trauma/frattura completata in modalita' demo."
+    }
+  ]
+}
