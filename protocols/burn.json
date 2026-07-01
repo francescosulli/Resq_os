@@ -43,7 +43,7 @@
       "item": {
         "name": "Garza sterile non aderente o telo sterile",
         "compartment": "Vano sterili",
-        "nfc_tag": "sterile_cover"
+        "refill_tag": "sterile_cover"
       },
       "next": "end"
     },

@@ -29,7 +29,7 @@
       "item": {
         "name": "Guanti monouso",
         "compartment": "Vano protezione",
-        "nfc_tag": "gloves"
+        "refill_tag": "gloves"
       },
       "next": "gauze"
     },
@@ -40,7 +40,7 @@
       "item": {
         "name": "Garze sterili",
         "compartment": "Vano garze",
-        "nfc_tag": "sterile_gauze"
+        "refill_tag": "sterile_gauze"
       },
       "next": "bandage"
     },
@@ -51,7 +51,7 @@
       "item": {
         "name": "Benda",
         "compartment": "Vano bende",
-        "nfc_tag": "bandage"
+        "refill_tag": "bandage"
       },
       "next": "direct_pressure"
     },
@@ -76,7 +76,7 @@
       "item": {
         "name": "Cerotto o garza",
         "compartment": "Vano medicazioni",
-        "nfc_tag": "plaster_gauze"
+        "refill_tag": "plaster_gauze"
       },
       "next": "end"
     },

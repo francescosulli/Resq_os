@@ -274,6 +274,10 @@ button {
   min-height: 0;
 }
 
+.protocol-layout.single-pane {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .primary-pane {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -331,34 +335,6 @@ button {
   color: white;
 }
 
-.status-rail {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-}
-
-.status-card {
-  min-height: 116px;
-  border-radius: 8px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 18px;
-}
-
-.status-card b {
-  display: block;
-  margin-bottom: 10px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  text-transform: uppercase;
-}
-
-.status-card p {
-  margin: 0;
-  font-weight: 760;
-  line-height: 1.35;
-}
-
 .item-pane {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -380,28 +356,6 @@ button {
   margin: 0;
   font-size: 1.45rem;
   font-weight: 800;
-}
-
-.signal {
-  min-height: 72px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  font-weight: 780;
-}
-
-.signal.ok {
-  border-color: rgba(15, 118, 110, 0.35);
-  color: var(--ok);
-  background: #eefaf8;
-}
-
-.signal.warn {
-  border-color: rgba(180, 83, 9, 0.25);
-  color: var(--warn);
-  background: #fff7ed;
 }
 
 .diagnostic-grid {

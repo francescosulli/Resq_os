@@ -23,7 +23,7 @@ class StateManager:
             "history": [],
             "answers": [],
             "requested_items": [],
-            "nfc_events": [],
+            "refill_events": [],
             "started_at": None,
             "completed_at": None,
             "last_audio_text": "",
@@ -34,12 +34,6 @@ class StateManager:
                 "active": False,
                 "compartment": "",
                 "message": "[LED] Perimetri spenti",
-            },
-            "nfc_status": {
-                "status": "idle",
-                "message": "[NFC] In attesa",
-                "expected_item": "",
-                "detected_item": "",
             },
         }
 
@@ -69,12 +63,6 @@ class StateManager:
             self._state["current_step_id"] = step_id
             self._state["last_answer_message"] = ""
             self._state["active_item"] = None
-            self._state["nfc_status"] = {
-                "status": "idle",
-                "message": "[NFC] In attesa",
-                "expected_item": "",
-                "detected_item": "",
-            }
 
     def back(self) -> str | None:
         with self._lock:
@@ -124,32 +112,17 @@ class StateManager:
                 {
                     "name": item["name"],
                     "compartment": item["compartment"],
-                    "nfc_tag": item["nfc_tag"],
+                    "refill_tag": item.get("refill_tag", ""),
                     "at": utc_now(),
                 }
             )
 
-    def set_nfc_status(
-        self,
-        status: str,
-        message: str,
-        expected_item: str = "",
-        detected_item: str = "",
-    ) -> None:
+    def record_refill_nfc(self, item_name: str, detected_tag: str, ok: bool) -> None:
         with self._lock:
-            self._state["nfc_status"] = {
-                "status": status,
-                "message": message,
-                "expected_item": expected_item,
-                "detected_item": detected_item,
-            }
-
-    def record_nfc(self, expected_item: str, detected_item: str, ok: bool) -> None:
-        with self._lock:
-            self._state["nfc_events"].append(
+            self._state["refill_events"].append(
                 {
-                    "expected_item": expected_item,
-                    "detected_item": detected_item,
+                    "item_name": item_name,
+                    "detected_tag": detected_tag,
                     "ok": ok,
                     "at": utc_now(),
                 }
@@ -164,4 +137,3 @@ class StateManager:
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             return copy.deepcopy(self._state)
-

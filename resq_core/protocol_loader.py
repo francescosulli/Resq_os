@@ -81,7 +81,7 @@ class ProtocolLoader:
                 item = step.get("item")
                 if not isinstance(item, dict):
                     raise ProtocolError(f"{path}: item '{step['id']}' senza item")
-                for key in ("name", "compartment", "nfc_tag"):
+                for key in ("name", "compartment"):
                     if key not in item:
                         raise ProtocolError(f"{path}: item '{step['id']}' senza '{key}'")
             elif step_type not in {"instruction", "end"}:

@@ -1,6 +1,6 @@
 # ResQ
 
-ResQ e' una prima base software per una valigetta smart di primo soccorso basata su Raspberry Pi 5. L'app e' pensata come dispositivo dedicato: avvio automatico, interfaccia a schermo intero su display touch da circa 9", pulsanti grandi, flusso guidato e astrazioni gia' pronte per LED, NFC, audio e pulsanti fisici.
+ResQ e' una prima base software per una valigetta smart di primo soccorso basata su Raspberry Pi 5. L'app e' pensata come dispositivo dedicato: avvio automatico, interfaccia a schermo intero su display touch da circa 9", pulsanti grandi, flusso guidato e astrazioni gia' pronte per LED, audio, pulsanti fisici e NFC per refill/manutenzione.
 
 Questa demo non e' un dispositivo medico, non sostituisce formazione, 112 o personale sanitario, e contiene protocolli dimostrativi.
 
@@ -111,7 +111,9 @@ Le classi in `hardware/` sono gia' isolate:
 - `AudioGuide`
 - `DisplayManager`
 
-Oggi loggano eventi simulati, ad esempio accensione LED, lettura NFC e guida audio. In futuro puoi sostituire il contenuto di questi metodi con librerie GPIO, I2C/SPI, lettori NFC reali e output audio del Raspberry senza cambiare la UI.
+Oggi loggano eventi simulati, ad esempio accensione LED, refill NFC in manutenzione e guida audio. In futuro puoi sostituire il contenuto di questi metodi con librerie GPIO, I2C/SPI, lettori NFC reali e output audio del Raspberry senza cambiare la UI.
+
+L'NFC non viene usato durante un intervento. Nel percorso d'emergenza l'utente deve solo prendere il presidio indicato dal vano illuminato e continuare. Il lettore NFC e' previsto solo per manutenzione/refill, quando vengono reinseriti o verificati i componenti nella valigetta.
 
 I pulsanti fisici sono simulabili anche da tastiera:
 
@@ -129,7 +131,7 @@ Gli eventi vengono registrati in:
 logs/resq.log
 ```
 
-Sono tracciati avvio app, avvio protocolli, risposte utente, presidi richiesti, LED simulati, NFC simulati, completamento protocollo ed errori.
+Sono tracciati avvio app, avvio protocolli, risposte utente, presidi richiesti, LED simulati, eventi refill NFC, completamento protocollo ed errori.
 
 ## Installazione su Raspberry Pi
 

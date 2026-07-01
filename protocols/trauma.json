@@ -43,7 +43,7 @@
       "item": {
         "name": "Benda triangolare o telo",
         "compartment": "Vano supporti",
-        "nfc_tag": "triangular_bandage"
+        "refill_tag": "triangular_bandage"
       },
       "next": "bleeding_question"
     },

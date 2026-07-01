@@ -130,8 +130,8 @@ class ResQRequestHandler(BaseHTTPRequestHandler):
             if path == "/api/audio/repeat":
                 self._send_json(self.server.flow.repeat_audio())
                 return
-            if path == "/api/nfc/simulate":
-                self._send_json(self.server.flow.simulate_nfc())
+            if path == "/api/refill/nfc/simulate":
+                self._send_json(self.server.flow.simulate_refill_nfc())
                 return
             if path.startswith("/api/diagnostics/"):
                 test_name = unquote(path.split("/")[-1])
@@ -239,4 +239,3 @@ def create_server(host: str | None = None, port: int | None = None) -> ResQHTTPS
         flow=flow,
         buttons=buttons,
     )
-

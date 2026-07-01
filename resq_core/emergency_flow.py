@@ -63,11 +63,6 @@ class EmergencyFlow:
         if step["type"] == "question":
             raise FlowError("Rispondi si' o no per continuare")
 
-        if step["type"] == "item":
-            nfc_status = self.state.snapshot()["nfc_status"]["status"]
-            if nfc_status != "confirmed":
-                raise FlowError("Simula la lettura NFC prima di continuare")
-
         target = step.get("next")
         if not target:
             summary = step.get("summary", step["instruction"])
@@ -96,34 +91,29 @@ class EmergencyFlow:
         self.logger.info("Ripeti audio: %s", text)
         return self.public_state()
 
-    def simulate_nfc(self) -> dict[str, Any]:
-        _protocol, step = self._current_protocol_and_step()
-        if step["type"] != "item":
-            raise FlowError("Nessun presidio richiesto in questo step")
-
-        item = step["item"]
-        detected = self.nfc.simulate_read(item["name"])
-        self.state.record_nfc(item["name"], detected, True)
-        self.state.set_nfc_status(
-            "confirmed",
-            f"[NFC] Oggetto corretto rilevato: {detected}",
-            expected_item=item["name"],
-            detected_item=detected,
-        )
-        self.logger.info("NFC simulato: atteso=%s rilevato=%s", item["name"], detected)
-        return self.public_state()
-
     def reset_home(self) -> dict[str, Any]:
         self.leds.clear()
         self.logger.info("Ritorno alla home")
         self.state.reset_home()
         return self.public_state()
 
+    def simulate_refill_nfc(self) -> dict[str, Any]:
+        item_name = "Refill demo: garze sterili"
+        detected_tag = self.nfc.simulate_refill(item_name)
+        self.state.record_refill_nfc(item_name, detected_tag, True)
+        message = f"[NFC REFILL] Refill registrato: {detected_tag}"
+        self.logger.info(message)
+        return {
+            "test": "refill_nfc",
+            "message": message,
+            "state": self.public_state(),
+        }
+
     def run_diagnostic(self, test_name: str) -> dict[str, Any]:
         if test_name == "led":
             message = self.leds.test_sequence()
-        elif test_name == "nfc":
-            message = self.nfc.test()
+        elif test_name == "refill_nfc":
+            return self.simulate_refill_nfc()
         elif test_name == "audio":
             message = self.audio.test()
             self.state.set_audio(message)
@@ -179,7 +169,7 @@ class EmergencyFlow:
             "step": step,
             "answers": snapshot["answers"],
             "requested_items": snapshot["requested_items"],
-            "nfc_events": snapshot["nfc_events"],
+            "refill_events": snapshot["refill_events"],
             "started_at": snapshot["started_at"],
             "completed_at": snapshot["completed_at"],
             "last_audio_text": snapshot["last_audio_text"],
@@ -187,7 +177,6 @@ class EmergencyFlow:
             "last_answer_message": snapshot["last_answer_message"],
             "summary": snapshot["summary"],
             "led_status": snapshot["led_status"],
-            "nfc_status": snapshot["nfc_status"],
         }
 
     def _goto(self, protocol: dict[str, Any], step_id: str) -> None:
@@ -205,11 +194,6 @@ class EmergencyFlow:
             self.state.set_active_item(item)
             self.state.record_item_requested(item)
             self.state.set_led_status(True, item["compartment"], led_message)
-            self.state.set_nfc_status(
-                "waiting",
-                f"[NFC] In attesa di: {item['name']}",
-                expected_item=item["name"],
-            )
             self.logger.info(
                 "Presidio richiesto: %s, vano: %s",
                 item["name"],
@@ -266,4 +250,3 @@ class EmergencyFlow:
         if step["type"] == "end":
             public["summary"] = step.get("summary", step["instruction"])
         return public
-

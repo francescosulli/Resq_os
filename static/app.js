@@ -29,12 +29,6 @@ const UI_TEXT = {
     selectionTitle: "Selezione emergenza",
     selectionSubtitle: "Scegli il protocollo dimostrativo piu' vicino alla situazione.",
     home: "Home",
-    item: "Presidio",
-    litCompartment: "Vano illuminato",
-    audio: "Audio",
-    noItem: "Nessun presidio richiesto in questa fase",
-    audioReady: "Guida audio simulata pronta",
-    audioIdle: "Audio non ancora riprodotto",
     back: "Indietro",
     repeatAudio: "Ripeti audio",
     question: "Domanda",
@@ -44,7 +38,7 @@ const UI_TEXT = {
     requestedObject: "Oggetto richiesto",
     take: "Prendi",
     compartment: "Vano",
-    simulateNfc: "Simula lettura NFC",
+    confirmItem: "Ho preso il presidio",
     continue: "Continua",
     endProtocol: "Fine protocollo",
     requestedItems: "Presidi richiesti",
@@ -54,18 +48,13 @@ const UI_TEXT = {
     backHome: "Torna alla home",
     diagnostics: "Diagnostica",
     diagnosticsSubtitle: "Hardware in modalita' simulata",
-    testLed: "Test LED",
-    testNfc: "Test NFC",
+    testCompartments: "Test vani",
+    testRefillNfc: "Refill NFC",
     testAudio: "Test audio",
     appStatus: "Stato app",
     ready: "Pronto",
-    ledOff: "[LED] Perimetri spenti",
-    nfcIdle: "[NFC] In attesa",
-    nfcWaiting: "[NFC] In attesa di: {item}",
-    nfcConfirmed: "[NFC] Oggetto corretto rilevato: {item}",
-    ledOn: "[LED] Accendo perimetro vano: {compartment}",
-    diagnosticLedDone: "[LED] Test sequenza perimetrale completato",
-    diagnosticNfcDone: "[NFC] Test lettore simulato completato",
+    diagnosticCompartmentsDone: "Test illuminazione vani completato",
+    diagnosticRefillNfcDone: "[NFC REFILL] Refill simulato registrato",
     diagnosticAudioDone: "[AUDIO] Test guida audio simulata completato",
     diagnosticStatusDone: "App attiva, backend operativo, hardware in simulazione",
   },
@@ -78,12 +67,6 @@ const UI_TEXT = {
     selectionTitle: "Emergency selection",
     selectionSubtitle: "Choose the demonstration protocol closest to the situation.",
     home: "Home",
-    item: "Item",
-    litCompartment: "Lit compartment",
-    audio: "Audio",
-    noItem: "No item required in this step",
-    audioReady: "Simulated audio guide ready",
-    audioIdle: "Audio not played yet",
     back: "Back",
     repeatAudio: "Repeat audio",
     question: "Question",
@@ -93,7 +76,7 @@ const UI_TEXT = {
     requestedObject: "Requested item",
     take: "Take",
     compartment: "Compartment",
-    simulateNfc: "Simulate NFC read",
+    confirmItem: "I have taken the item",
     continue: "Continue",
     endProtocol: "Protocol complete",
     requestedItems: "Requested items",
@@ -103,18 +86,13 @@ const UI_TEXT = {
     backHome: "Back to home",
     diagnostics: "Diagnostics",
     diagnosticsSubtitle: "Hardware in simulated mode",
-    testLed: "LED test",
-    testNfc: "NFC test",
+    testCompartments: "Compartments test",
+    testRefillNfc: "Refill NFC",
     testAudio: "Audio test",
     appStatus: "App status",
     ready: "Ready",
-    ledOff: "[LED] Perimeters off",
-    nfcIdle: "[NFC] Waiting",
-    nfcWaiting: "[NFC] Waiting for: {item}",
-    nfcConfirmed: "[NFC] Correct item detected: {item}",
-    ledOn: "[LED] Lighting compartment perimeter: {compartment}",
-    diagnosticLedDone: "[LED] Perimeter sequence test completed",
-    diagnosticNfcDone: "[NFC] Simulated reader test completed",
+    diagnosticCompartmentsDone: "Compartment lighting test completed",
+    diagnosticRefillNfcDone: "[NFC REFILL] Simulated refill registered",
     diagnosticAudioDone: "[AUDIO] Simulated audio guide test completed",
     diagnosticStatusDone: "App active, backend operational, hardware simulated",
   },
@@ -171,8 +149,6 @@ const TEXT_I18N = {
     "Ho chiamato": "I called",
     "Prendi presidio": "Take item",
     "Fine": "Finish",
-    "Simula la lettura NFC prima di continuare":
-      "Simulate the NFC read before continuing",
     "Rispondi si' o no per continuare": "Answer yes or no to continue",
     "Questo step non richiede una risposta si/no":
       "This step does not require a yes/no answer",
@@ -420,7 +396,7 @@ function localizeItem(item) {
   if (!item) {
     return null;
   }
-  const translation = ITEM_I18N[currentLanguage]?.[item.nfc_tag] || {};
+  const translation = ITEM_I18N[currentLanguage]?.[item.refill_tag] || {};
   return {
     ...item,
     name: translation.name || translateText(item.name),
@@ -452,33 +428,10 @@ function localizeStep(protocolId, step) {
   return localized;
 }
 
-function ledMessage(state) {
-  if (state.led_status.active) {
-    const item = localizeItem(state.active_item);
-    const compartment = item?.compartment || translateText(state.led_status.compartment);
-    return format(t("ledOn"), { compartment });
-  }
-  return t("ledOff");
-}
-
-function nfcMessage(state) {
-  const item = localizeItem(state.active_item);
-  const expected = item?.name || translateText(state.nfc_status.expected_item);
-  const detected = item?.name || translateText(state.nfc_status.detected_item);
-
-  if (state.nfc_status.status === "waiting") {
-    return format(t("nfcWaiting"), { item: expected });
-  }
-  if (state.nfc_status.status === "confirmed") {
-    return format(t("nfcConfirmed"), { item: detected });
-  }
-  return t("nfcIdle");
-}
-
 function diagnosticResult(testName) {
   const messages = {
-    led: t("diagnosticLedDone"),
-    nfc: t("diagnosticNfcDone"),
+    led: t("diagnosticCompartmentsDone"),
+    refill_nfc: t("diagnosticRefillNfcDone"),
     audio: t("diagnosticAudioDone"),
     status: t("diagnosticStatusDone"),
   };
@@ -581,35 +534,6 @@ function renderSelection() {
   `;
 }
 
-function statusRail(state) {
-  const item = localizeItem(state.active_item);
-  const itemText = item
-    ? `${item.name} - ${item.compartment}`
-    : t("noItem");
-  const audioText = state.last_audio_text ? t("audioReady") : t("audioIdle");
-
-  return `
-    <aside class="status-rail">
-      <div class="status-card">
-        <b>${escapeHtml(t("item"))}</b>
-        <p>${escapeHtml(itemText)}</p>
-      </div>
-      <div class="status-card">
-        <b>${escapeHtml(t("litCompartment"))}</b>
-        <p>${escapeHtml(ledMessage(state))}</p>
-      </div>
-      <div class="status-card">
-        <b>NFC</b>
-        <p>${escapeHtml(nfcMessage(state))}</p>
-      </div>
-      <div class="status-card">
-        <b>${escapeHtml(t("audio"))}</b>
-        <p>${escapeHtml(audioText)}</p>
-      </div>
-    </aside>
-  `;
-}
-
 function protocolTopbar(state) {
   const protocol = localizeProtocol(state.protocol);
   return `
@@ -658,7 +582,7 @@ function renderProtocol(state) {
       ${languageBar()}
       ${protocolTopbar(state)}
       ${errorMarkup()}
-      <div class="protocol-layout">
+      <div class="protocol-layout single-pane">
         <section class="primary-pane">
           <div>
             <div class="step-label">${escapeHtml(step.type === "question" ? t("question") : t("instruction"))}</div>
@@ -667,7 +591,6 @@ function renderProtocol(state) {
           </div>
           ${controls}
         </section>
-        ${statusRail(state)}
       </div>
     </section>
   `;
@@ -678,31 +601,23 @@ function renderItem(state) {
   const protocol = localizeProtocol(state.protocol);
   const step = localizeStep(protocol.id, state.step);
   const item = step.item;
-  const confirmed = state.nfc_status.status === "confirmed";
-  const signalClass = confirmed ? "ok" : "warn";
 
   app.innerHTML = `
     <section class="screen">
       ${languageBar()}
       ${protocolTopbar(state)}
       ${errorMarkup()}
-      <div class="protocol-layout">
+      <div class="protocol-layout single-pane">
         <section class="item-pane">
           <div class="step-label">${escapeHtml(t("requestedObject"))}</div>
           <h2 class="item-title">${escapeHtml(t("take"))}: ${escapeHtml(item.name)}</h2>
           <p class="compartment">${escapeHtml(t("compartment"))}: ${escapeHtml(item.compartment)}</p>
-          <div class="signal warn">${escapeHtml(ledMessage(state))}</div>
-          <div class="signal ${signalClass}">${escapeHtml(nfcMessage(state))}</div>
           <div class="action-row">
-            <button class="danger-button" type="button" onclick="ResQ.simulateNfc()" ${confirmed ? "disabled" : ""}>
-              ${escapeHtml(t("simulateNfc"))}
-            </button>
-            <button class="primary-button" type="button" onclick="ResQ.next()" ${confirmed ? "" : "disabled"}>
-              ${escapeHtml(t("continue"))}
+            <button class="primary-button" type="button" onclick="ResQ.next()">
+              ${escapeHtml(t("confirmItem"))}
             </button>
           </div>
         </section>
-        ${statusRail(state)}
       </div>
     </section>
   `;
@@ -770,8 +685,8 @@ function renderDiagnostics() {
       </div>
       ${errorMarkup()}
       <div class="diagnostic-grid">
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(t("testLed"))}</button>
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('nfc')">${escapeHtml(t("testNfc"))}</button>
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(t("testCompartments"))}</button>
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('refill_nfc')">${escapeHtml(t("testRefillNfc"))}</button>
         <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('audio')">${escapeHtml(t("testAudio"))}</button>
         <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('status')">${escapeHtml(t("appStatus"))}</button>
       </div>
@@ -850,13 +765,6 @@ async function repeatAudio() {
   });
 }
 
-async function simulateNfc() {
-  await guarded(async () => {
-    const state = await request("/api/nfc/simulate", { method: "POST" });
-    renderFromState(state);
-  });
-}
-
 async function goHome() {
   await guarded(async () => {
     diagnosticMessage = "";
@@ -925,7 +833,6 @@ window.ResQ = {
   next,
   back,
   repeatAudio,
-  simulateNfc,
   goHome,
   openDiagnostics,
   runDiagnostic,
