@@ -484,18 +484,20 @@ function renderHome() {
   app.innerHTML = `
     <section class="screen home-screen">
       ${languageBar()}
-      <div class="brand-block">
-        <h1 class="brand">ResQ</h1>
-        <p class="subtitle">Smart First Aid Case</p>
-      </div>
-      <div class="home-action">
+      <div class="home-core">
+        <div class="brand-block">
+          <h1 class="brand">ResQ</h1>
+          <p class="subtitle">Smart First Aid Case</p>
+        </div>
         ${errorMarkup()}
-        <button class="emergency-button" type="button" onclick="ResQ.startEmergency()">
-          ${escapeHtml(t("emergencyStart"))}
-        </button>
-        <button class="maintenance-button" type="button" onclick="ResQ.openDiagnostics()">
-          ${escapeHtml(t("maintenance"))}
-        </button>
+        <div class="home-action">
+          <button class="emergency-button" type="button" onclick="ResQ.startEmergency()">
+            ${escapeHtml(t("emergencyStart"))}
+          </button>
+          <button class="maintenance-button" type="button" onclick="ResQ.openDiagnostics()">
+            ${escapeHtml(t("maintenance"))}
+          </button>
+        </div>
       </div>
       <p class="footer-note">
         ${escapeHtml(t("footerNote"))}
@@ -512,14 +514,13 @@ function renderSelection() {
       (protocol) => `
         <button class="choice-card" type="button" onclick="ResQ.startProtocol('${escapeHtml(protocol.id)}')">
           <strong>${escapeHtml(protocol.title)}</strong>
-          <span>${escapeHtml(protocol.disclaimer)}</span>
         </button>
       `,
     )
     .join("");
 
   app.innerHTML = `
-    <section class="screen">
+    <section class="screen selection-screen">
       ${languageBar()}
       <div class="topbar">
         <div class="topbar-title">
@@ -529,7 +530,9 @@ function renderSelection() {
         <button class="ghost-button" type="button" onclick="ResQ.goHome()">${escapeHtml(t("home"))}</button>
       </div>
       ${errorMarkup()}
-      <div class="selection-grid">${cards}</div>
+      <div class="selection-content">
+        <div class="selection-grid">${cards}</div>
+      </div>
     </section>
   `;
 }
@@ -578,16 +581,18 @@ function renderProtocol(state) {
     : "";
 
   app.innerHTML = `
-    <section class="screen">
+    <section class="screen protocol-screen">
       ${languageBar()}
       ${protocolTopbar(state)}
       ${errorMarkup()}
       <div class="protocol-layout single-pane">
         <section class="primary-pane">
-          <div>
+          <div class="instruction-block">
             <div class="step-label">${escapeHtml(step.type === "question" ? t("question") : t("instruction"))}</div>
-            <p class="instruction">${escapeHtml(step.instruction)}</p>
-            ${question}
+            <div class="instruction-copy">
+              <p class="instruction">${escapeHtml(step.instruction)}</p>
+              ${question}
+            </div>
           </div>
           ${controls}
         </section>
@@ -603,15 +608,17 @@ function renderItem(state) {
   const item = step.item;
 
   app.innerHTML = `
-    <section class="screen">
+    <section class="screen item-screen">
       ${languageBar()}
       ${protocolTopbar(state)}
       ${errorMarkup()}
       <div class="protocol-layout single-pane">
         <section class="item-pane">
           <div class="step-label">${escapeHtml(t("requestedObject"))}</div>
-          <h2 class="item-title">${escapeHtml(t("take"))}: ${escapeHtml(item.name)}</h2>
-          <p class="compartment">${escapeHtml(t("compartment"))}: ${escapeHtml(item.compartment)}</p>
+          <div class="item-copy">
+            <h2 class="item-title">${escapeHtml(t("take"))}: ${escapeHtml(item.name)}</h2>
+            <p class="compartment">${escapeHtml(t("compartment"))}: ${escapeHtml(item.compartment)}</p>
+          </div>
           <div class="action-row">
             <button class="primary-button" type="button" onclick="ResQ.next()">
               ${escapeHtml(t("confirmItem"))}
@@ -645,7 +652,7 @@ function renderDone(state) {
   const summary = translateText(state.summary) || step?.summary || t("continue");
 
   app.innerHTML = `
-    <section class="screen">
+    <section class="screen done-screen">
       ${languageBar()}
       <div class="topbar">
         <div class="topbar-title">
@@ -674,7 +681,7 @@ function renderDone(state) {
 function renderDiagnostics() {
   currentView = "diagnostics";
   app.innerHTML = `
-    <section class="screen">
+    <section class="screen diagnostics-screen">
       ${languageBar()}
       <div class="topbar">
         <div class="topbar-title">
@@ -684,13 +691,15 @@ function renderDiagnostics() {
         <button class="ghost-button" type="button" onclick="ResQ.goHome()">${escapeHtml(t("home"))}</button>
       </div>
       ${errorMarkup()}
-      <div class="diagnostic-grid">
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(t("testCompartments"))}</button>
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('refill_nfc')">${escapeHtml(t("testRefillNfc"))}</button>
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('audio')">${escapeHtml(t("testAudio"))}</button>
-        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('status')">${escapeHtml(t("appStatus"))}</button>
+      <div class="diagnostic-content">
+        <div class="diagnostic-grid">
+          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(t("testCompartments"))}</button>
+          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('refill_nfc')">${escapeHtml(t("testRefillNfc"))}</button>
+          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('audio')">${escapeHtml(t("testAudio"))}</button>
+          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('status')">${escapeHtml(t("appStatus"))}</button>
+        </div>
+        <div class="diagnostic-result">${escapeHtml(diagnosticMessage || t("ready"))}</div>
       </div>
-      <div class="diagnostic-result">${escapeHtml(diagnosticMessage || t("ready"))}</div>
     </section>
   `;
 }
