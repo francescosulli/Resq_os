@@ -70,8 +70,8 @@ def main() -> None:
     url = f"http://{browser_host}:{port}"
     display = server.settings.get("display", {})
     kiosk_window_size = (
-        int(display.get("kiosk_width", 720)),
-        int(display.get("kiosk_height", 1280)),
+        int(display.get("kiosk_width", 1280)),
+        int(display.get("kiosk_height", 720)),
     )
 
     if args.open_browser or args.kiosk:

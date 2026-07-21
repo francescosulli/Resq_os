@@ -42,9 +42,12 @@ def load_settings(root_dir: Path) -> dict[str, Any]:
         "display": {
             "native_width": 1280,
             "native_height": 720,
-            "kiosk_width": 720,
-            "kiosk_height": 1280,
+            "kiosk_width": 1280,
+            "kiosk_height": 720,
+            "content_width": 720,
+            "content_height": 1280,
             "orientation": "portrait",
+            "rotation_degrees": 90,
         },
         "hardware": {"mode": "simulated"},
     }

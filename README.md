@@ -8,11 +8,11 @@ La UI include una barra superiore con bandiere per cambiare lingua in qualsiasi 
 
 ## Display target
 
-La UI e' ottimizzata per il monitor touch 9" `1280 x 720` usato in verticale. Il pannello e' nativamente landscape, quindi sul Raspberry va ruotata l'uscita video a portrait: l'app deve vedere una viewport effettiva di circa `720 x 1280`.
+La UI e' ottimizzata per il monitor touch 9" `1280 x 720` montato fisicamente in verticale. Il pannello resta nativamente landscape: il kiosk Chromium usa quindi una finestra `1280 x 720` e l'app ruota internamente un canvas portrait `720 x 1280` di 90 gradi.
 
-Il kiosk Chromium viene lanciato con finestra `720 x 1280`; questi valori sono in `config/settings.json` nella sezione `display`. Se il display viene usato non ruotato, la UI resta in colonna ma non sfrutta correttamente la forma fisica della valigetta.
+Questi valori sono in `config/settings.json` nella sezione `display`. L'HTML usa la classe `display-rotate-90` sul `body`; se il montaggio fisico richiede il verso opposto, cambia la classe in `display-rotate-270`.
 
-La rotazione va configurata nel sistema operativo/grafica del Raspberry, non solo nel CSS, cosi' anche il touch segue lo stesso orientamento dell'immagine.
+Con questa configurazione non serve che il sistema operativo esponga una viewport portrait: il browser vede `1280 x 720`, mentre l'interfaccia viene disegnata ruotata per risultare dritta quando il monitor viene installato verticale.
 
 ## Scelta tecnica
 
