@@ -9,6 +9,13 @@
   "logging": {
     "file": "logs/resq.log"
   },
+  "display": {
+    "native_width": 1280,
+    "native_height": 720,
+    "kiosk_width": 720,
+    "kiosk_height": 1280,
+    "orientation": "portrait"
+  },
   "hardware": {
     "mode": "simulated",
     "buttons": {
@@ -20,4 +27,3 @@
     }
   }
 }
-

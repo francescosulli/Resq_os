@@ -6,6 +6,14 @@ Questa demo non e' un dispositivo medico, non sostituisce formazione, 112 o pers
 
 La UI include una barra superiore con bandiere per cambiare lingua in qualsiasi momento, anche durante un protocollo gia' avviato. In questa prima versione sono presenti italiano e inglese, con preferenza salvata nel browser.
 
+## Display target
+
+La UI e' ottimizzata per il monitor touch 9" `1280 x 720` usato in verticale. Il pannello e' nativamente landscape, quindi sul Raspberry va ruotata l'uscita video a portrait: l'app deve vedere una viewport effettiva di circa `720 x 1280`.
+
+Il kiosk Chromium viene lanciato con finestra `720 x 1280`; questi valori sono in `config/settings.json` nella sezione `display`. Se il display viene usato non ruotato, la UI resta in colonna ma non sfrutta correttamente la forma fisica della valigetta.
+
+La rotazione va configurata nel sistema operativo/grafica del Raspberry, non solo nel CSS, cosi' anche il touch segue lo stesso orientamento dell'immagine.
+
 ## Scelta tecnica
 
 Ho scelto una web app locale con backend Python standard library e frontend HTML/CSS/JS semplice. La scelta evita framework pesanti e dipendenze runtime, funziona bene su PC/Mac durante lo sviluppo, e sul Raspberry puo' partire in kiosk mode con Chromium a schermo intero. La logica resta modulare: backend, protocolli, stato, hardware simulato e UI sono separati.

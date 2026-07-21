@@ -39,6 +39,13 @@ def load_settings(root_dir: Path) -> dict[str, Any]:
             "kiosk": True,
         },
         "logging": {"file": "logs/resq.log"},
+        "display": {
+            "native_width": 1280,
+            "native_height": 720,
+            "kiosk_width": 720,
+            "kiosk_height": 1280,
+            "orientation": "portrait",
+        },
         "hardware": {"mode": "simulated"},
     }
     settings_path = root_dir / "config" / "settings.json"

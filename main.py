@@ -28,7 +28,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def launch_browser(url: str, kiosk: bool) -> None:
+def launch_browser(url: str, kiosk: bool, window_size: tuple[int, int]) -> None:
     logger = get_logger("main")
     time.sleep(1.2)
 
@@ -40,9 +40,12 @@ def launch_browser(url: str, kiosk: bool) -> None:
             or shutil.which("google-chrome-stable")
         )
         if browser:
+            width, height = window_size
             command = [
                 browser,
                 "--kiosk",
+                f"--window-size={width},{height}",
+                "--force-device-scale-factor=1",
                 "--noerrdialogs",
                 "--disable-infobars",
                 "--disable-session-crashed-bubble",
@@ -65,11 +68,16 @@ def main() -> None:
     host, port = server.server_address[:2]
     browser_host = "127.0.0.1" if host in ("", "0.0.0.0") else host
     url = f"http://{browser_host}:{port}"
+    display = server.settings.get("display", {})
+    kiosk_window_size = (
+        int(display.get("kiosk_width", 720)),
+        int(display.get("kiosk_height", 1280)),
+    )
 
     if args.open_browser or args.kiosk:
         thread = threading.Thread(
             target=launch_browser,
-            args=(url, args.kiosk),
+            args=(url, args.kiosk, kiosk_window_size),
             daemon=True,
         )
         thread.start()
@@ -86,4 +94,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
