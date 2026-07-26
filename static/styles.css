@@ -1,16 +1,51 @@
 :root {
   color-scheme: light;
-  --red: #c8122e;
-  --red-dark: #9c0f25;
-  --ink: #14171f;
-  --muted: #5f6875;
-  --line: #d9dee7;
+
+  /* Brand palette, taken from the ResQ logotype. */
+  --red: #eb3c3a; /* the "Q" - large surfaces and accents */
+  --red-strong: #d0332f; /* accessible red for small text and compact buttons */
+  --red-dark: #a82623; /* deep red for pressed states and alerts */
+  --maroon: #521a1c; /* the "Res" - brand dark */
+
+  /* Warm neutrals derived from the brand dark. */
+  --ink: #2a1618;
+  --muted: #7a6663;
+  --line: #e4dbda;
   --panel: #ffffff;
-  --panel-soft: #f9fafb;
-  --page: #f2f4f7;
+  --panel-soft: #faf7f6;
+  --page: #f4f1f0;
+
   --ok: #0f766e;
   --warn: #b45309;
-  --shadow: 0 10px 26px rgba(20, 23, 31, 0.09);
+
+  /*
+   * Brand geometry: the logotype is built from 45deg cut corners, so surfaces
+   * are chamfered (top-left / bottom-right) instead of rounded. Chamfered
+   * elements clip their own box-shadow, so depth uses --drop / --drop-soft and
+   * focus rings use inset shadows instead of an outline.
+   */
+  --chamfer: 14px;
+  --chamfer-sm: 9px;
+  --cut: polygon(
+    var(--chamfer) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%,
+    0 100%,
+    0 var(--chamfer)
+  );
+  --cut-sm: polygon(
+    var(--chamfer-sm) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer-sm)),
+    calc(100% - var(--chamfer-sm)) 100%,
+    0 100%,
+    0 var(--chamfer-sm)
+  );
+  --drop: drop-shadow(0 9px 20px rgba(82, 26, 28, 0.14));
+  --drop-soft: drop-shadow(0 5px 12px rgba(82, 26, 28, 0.09));
+  --focus-ring: inset 0 0 0 4px rgba(208, 51, 47, 0.45);
+
   --app-viewport-width: 100svw;
   --app-viewport-height: 100svh;
   --logical-vw: 1svw;
@@ -44,12 +79,40 @@ body {
 button {
   border: 0;
   font: inherit;
-  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease,
+    filter 120ms ease;
 }
 
-button:focus-visible {
-  outline: 4px solid rgba(200, 18, 46, 0.24);
-  outline-offset: 3px;
+/*
+ * An outline would be cut away by the chamfer clip-path, so ring inwards.
+ * The second selector outranks .flag-button.active, which sets its own inset.
+ */
+button:focus-visible,
+.flag-button.active:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Brand shape language: cut corners on the same diagonal as the logotype. */
+.emergency-button,
+.choice-card,
+.choice-button,
+.primary-pane,
+.item-pane,
+.diagnostic-button {
+  border-radius: 0;
+  clip-path: var(--cut);
+}
+
+.flag-button,
+.ghost-button,
+.primary-button,
+.danger-button,
+.maintenance-button,
+.diagnostic-result,
+.error-banner {
+  border-radius: 0;
+  clip-path: var(--cut-sm);
 }
 
 .app-shell {
@@ -119,7 +182,7 @@ button:focus-visible {
   margin: 0 0 24px;
   padding: 0 0 14px;
   border-bottom: 1px solid var(--line);
-  background: rgba(242, 244, 247, 0.94);
+  background: rgba(244, 241, 240, 0.94);
   backdrop-filter: blur(12px);
 }
 
@@ -127,23 +190,29 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.92);
 }
 
-.language-label {
-  color: var(--muted);
-  font-size: 0.92rem;
-  font-weight: 800;
-  text-transform: uppercase;
+/* Compact wordmark: keeps the brand present on every screen of the flow. */
+.bar-logo {
+  display: block;
+  width: clamp(104px, calc(var(--logical-vw) * 18), 136px);
+  height: auto;
+}
+
+/* The home screen already leads with the full lockup, so no repeat there. */
+.home-screen .bar-logo {
+  display: none;
 }
 
 .flag-group {
   display: flex;
   align-items: center;
   gap: 10px;
+  /* Keeps the flags right-aligned even where the bar logo is hidden. */
+  margin-left: auto;
 }
 
 .flag-button {
   min-width: 80px;
   min-height: 54px;
-  border-radius: 8px;
   padding: 0 12px;
   display: inline-flex;
   align-items: center;
@@ -155,13 +224,12 @@ button:focus-visible {
   cursor: pointer;
   font-size: 1.05rem;
   font-weight: 850;
-  box-shadow: 0 4px 12px rgba(20, 23, 31, 0.05);
 }
 
 .flag-button.active {
-  color: var(--red);
-  border-color: rgba(200, 18, 46, 0.45);
-  box-shadow: inset 0 0 0 2px rgba(200, 18, 46, 0.1);
+  color: var(--red-strong);
+  border-color: rgba(235, 60, 58, 0.5);
+  box-shadow: inset 0 0 0 2px rgba(235, 60, 58, 0.14);
 }
 
 .flag {
@@ -190,19 +258,25 @@ button:focus-visible {
   margin: 0;
 }
 
+/* The <h1> hosts the logo lockup, which carries the brand name and payoff. */
 .brand {
   margin: 0;
-  font-size: clamp(4.4rem, calc(var(--logical-vw) * 12), 5.4rem);
-  line-height: 0.95;
-  font-weight: 850;
-  color: var(--red);
+  display: flex;
+  justify-content: center;
+}
+
+.brand-logo {
+  width: min(100%, clamp(300px, calc(var(--logical-vw) * 62), 460px));
+  height: auto;
 }
 
 .subtitle {
-  margin: 12px 0 0;
-  font-size: 1.28rem;
+  margin: 20px 0 0;
+  font-size: 1.06rem;
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
 
 .home-action {
@@ -214,10 +288,9 @@ button:focus-visible {
 
 .emergency-button {
   min-height: 300px;
-  border-radius: 8px;
   background: var(--red);
   color: white;
-  box-shadow: var(--shadow);
+  filter: var(--drop);
   font-size: clamp(2.25rem, calc(var(--logical-vw) * 6.4), 2.9rem);
   font-weight: 850;
   letter-spacing: 0;
@@ -236,7 +309,6 @@ button:focus-visible {
 .maintenance-button {
   width: 100%;
   min-height: 68px;
-  border-radius: 8px;
   padding: 0 22px;
   color: var(--muted);
   background: var(--panel-soft);
@@ -271,6 +343,7 @@ button:focus-visible {
   margin: 0;
   font-size: clamp(2rem, calc(var(--logical-vw) * 5.5), 2.5rem);
   line-height: 1.05;
+  color: var(--maroon);
 }
 
 .disclaimer {
@@ -286,7 +359,6 @@ button:focus-visible {
 .choice-button,
 .diagnostic-button {
   min-height: 68px;
-  border-radius: 8px;
   padding: 0 22px;
   cursor: pointer;
   font-size: 1.05rem;
@@ -300,12 +372,12 @@ button:focus-visible {
 }
 
 .primary-button {
-  background: var(--ink);
+  background: var(--maroon);
   color: white;
 }
 
 .danger-button {
-  background: var(--red);
+  background: var(--red-strong);
   color: white;
 }
 
@@ -331,11 +403,10 @@ button:focus-visible {
 
 .choice-card {
   min-height: 250px;
-  border-radius: 8px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-top: 5px solid var(--red);
-  box-shadow: 0 7px 20px rgba(20, 23, 31, 0.07);
+  filter: var(--drop-soft);
   padding: 28px;
   text-align: left;
   cursor: pointer;
@@ -348,6 +419,7 @@ button:focus-visible {
   display: block;
   font-size: clamp(1.7rem, calc(var(--logical-vw) * 4.2), 2rem);
   line-height: 1.12;
+  color: var(--maroon);
 }
 
 .choice-card span {
@@ -378,12 +450,11 @@ button:focus-visible {
 .primary-pane {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
   padding: clamp(26px, calc(var(--logical-vw) * 4.8), 36px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(20, 23, 31, 0.07);
+  filter: var(--drop-soft);
 }
 
 .protocol-screen .primary-pane,
@@ -393,11 +464,11 @@ button:focus-visible {
 }
 
 .step-label {
-  color: var(--red);
+  color: var(--red-strong);
   font-weight: 850;
   text-transform: uppercase;
   font-size: 0.98rem;
-  letter-spacing: 0;
+  letter-spacing: 0.08em;
 }
 
 .instruction {
@@ -485,9 +556,8 @@ button:focus-visible {
 .item-pane {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
   padding: clamp(26px, calc(var(--logical-vw) * 4.8), 36px);
-  box-shadow: var(--shadow);
+  filter: var(--drop-soft);
   display: flex;
   flex-direction: column;
 }
@@ -545,7 +615,6 @@ button:focus-visible {
 .diagnostic-result {
   margin-top: 20px;
   min-height: 96px;
-  border-radius: 8px;
   padding: 18px;
   background: var(--panel);
   border: 1px solid var(--line);
@@ -573,7 +642,6 @@ button:focus-visible {
 .summary-list li {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
   padding: 14px 16px;
 }
 
@@ -581,15 +649,15 @@ button:focus-visible {
   margin: 22px 0 0;
   font-size: 1.1rem;
   line-height: 1.2;
+  color: var(--maroon);
 }
 
 .error-banner {
   margin-bottom: 16px;
   padding: 14px 16px;
-  border-radius: 8px;
-  background: #fff1f2;
+  background: #fdf0ef;
   color: var(--red-dark);
-  border: 1px solid rgba(200, 18, 46, 0.25);
+  border: 1px solid rgba(235, 60, 58, 0.3);
   font-weight: 800;
 }
 
@@ -597,10 +665,14 @@ button:focus-visible {
   .flag-button:hover,
   .ghost-button:hover,
   .maintenance-button:hover,
-  .diagnostic-button:hover,
+  .diagnostic-button:hover {
+    border-color: #c9b8b6;
+  }
+
   .choice-card:hover {
-    border-color: #b7bfcb;
-    box-shadow: 0 8px 20px rgba(20, 23, 31, 0.09);
+    border-color: #c9b8b6;
+    border-top-color: var(--red);
+    filter: var(--drop);
   }
 }
 
@@ -627,8 +699,17 @@ button:focus-visible {
     min-height: 46px;
   }
 
-  .brand {
-    font-size: 3.3rem;
+  .brand-logo {
+    width: min(100%, 250px);
+  }
+
+  .subtitle {
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
+  }
+
+  .bar-logo {
+    width: 96px;
   }
 
   .emergency-button {

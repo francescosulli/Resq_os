@@ -63,12 +63,35 @@ python3 main.py
 ├── templates/index.html
 ├── static/
 │   ├── app.js
-│   └── styles.css
+│   ├── styles.css
+│   └── img/
+├── logos/
 ├── logs/
 ├── system/resq.service
 ├── install.sh
 └── update.sh
 ```
+
+## Identita' visiva
+
+I file originali del logo stanno in `logos/ResQ-logo/` (`Web/` per RGB, `Stampa/` per CMYK). Le versioni usate dalla UI sono copiate in `static/img/`:
+
+| File | Uso |
+| --- | --- |
+| `resq-logo-payoff.svg` | lockup completo con payoff, hero della home |
+| `resq-logo.svg` | wordmark, barra superiore di tutte le altre schermate |
+| `resq-mark.svg` | solo la "Q" con la croce, favicon e icona |
+| `resq-logo-light.svg` | wordmark con "Res" bianco, per fondi scuri |
+| `resq-logo-negative.svg` | logo tutto bianco, per fondi rossi o foto |
+
+Palette e geometria sono derivate dal logo e centralizzate nelle custom properties in cima a `static/styles.css`:
+
+- `--red: #eb3c3a` e' il rosso della "Q", usato sulle superfici grandi (pulsante emergenza, accenti);
+- `--red-strong: #d0332f` e' la variante accessibile per testi piccoli e pulsanti compatti;
+- `--maroon: #521a1c` e' lo scuro di "Res", usato per titoli e pulsanti primari;
+- i neutri (`--ink`, `--muted`, `--line`, `--page`) sono grigi caldi derivati dal marrone del logo.
+
+Il logotipo e' costruito su tagli a 45 gradi, quindi le superfici sono smussate invece che arrotondate: i token `--cut` e `--cut-sm` contengono il `clip-path` applicato a pannelli, card e pulsanti. Attenzione a due conseguenze del `clip-path`: taglia via il `box-shadow` esterno (per la profondita' si usano i filtri `--drop` e `--drop-soft`) e taglia via l'`outline` di focus (sostituito da un anello interno, `--focus-ring`).
 
 ## Protocolli
 

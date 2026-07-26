@@ -361,9 +361,11 @@ function languageBar() {
     `;
   }).join("");
 
+  // The logo replaces the old text label: the nav keeps its accessible name via
+  // aria-label, and the flags already carry the language affordance.
   return `
     <nav class="language-bar" aria-label="${escapeHtml(t("languageLabel"))}">
-      <span class="language-label">${escapeHtml(t("languageLabel"))}</span>
+      <img class="bar-logo" src="/static/img/resq-logo.svg" alt="" aria-hidden="true">
       <div class="flag-group">${buttons}</div>
     </nav>
   `;
@@ -486,7 +488,13 @@ function renderHome() {
       ${languageBar()}
       <div class="home-core">
         <div class="brand-block">
-          <h1 class="brand">ResQ</h1>
+          <h1 class="brand">
+            <img
+              class="brand-logo"
+              src="/static/img/resq-logo-payoff.svg"
+              alt="ResQ - Smart Care, Safe Action"
+            >
+          </h1>
           <p class="subtitle">Smart First Aid Case</p>
         </div>
         ${errorMarkup()}
