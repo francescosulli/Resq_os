@@ -26,7 +26,19 @@ mkdir -p "${APP_DIR}"
 rsync -a --delete \
   --exclude ".git" \
   --exclude ".venv" \
-  --exclude "logs/*.log" \
+  --exclude ".idea" \
+  --exclude ".vscode" \
+  --exclude ".pytest_cache" \
+  --exclude ".DS_Store" \
+  --exclude ".env" \
+  --exclude "__MACOSX" \
+  --exclude "__pycache__" \
+  --exclude "*.pyc" \
+  --exclude "*.tmp" \
+  --exclude "*.cache" \
+  --exclude "data/" \
+  --exclude "dist/" \
+  --exclude "logs/" \
   "${SOURCE_DIR}/" "${APP_DIR}/"
 chown -R "${SERVICE_USER}:${SERVICE_USER}" "${APP_DIR}"
 
@@ -51,4 +63,3 @@ echo "Stop:        sudo systemctl stop resq.service"
 echo "Stato:       sudo systemctl status resq.service"
 echo "Log live:    journalctl -u resq.service -f"
 echo "Log app:     ${APP_DIR}/logs/resq.log"
-

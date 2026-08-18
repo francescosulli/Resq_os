@@ -1,0 +1,89 @@
+version: '1.1'
+scope: presentation_layer_and_read_only_emergency_brief_context
+manual_call_only: true
+principles:
+- ResQ does not place the emergency call automatically in this prototype.
+- When a call is indicated, the UI must explain what to communicate, not only show
+  a badge.
+- Once the emergency operator is active, operator instructions take priority over
+  ResQ speech.
+- The briefing may only display observations already supplied by the user or known
+  from the current flow; it must never invent a diagnosis, exact casualty count, or
+  location.
+policy_to_presentation:
+  CONDITIONAL:
+    mode: no_call_now_banner
+    behavior: Do not display 'call indicated now'. Keep any condition-specific wording
+      already present in the clinical instruction; escalate only when the flow/service
+      actually requires it.
+  RECOMMENDED:
+    mode: prominent_call_panel
+    headline: CHIAMA IL 112
+    blocking: false
+  RECOMMENDED_IMMEDIATE:
+    mode: call_now_panel
+    headline: CHIAMA IL 112 ORA
+    blocking: false
+    visual_priority: very_high
+  REQUIRED_PROMPT:
+    mode: call_now_focus
+    headline: CHIAMA IL 112 ORA
+    visual_priority: maximum
+    show_briefing: true
+  OPERATOR_PRIORITY:
+    mode: operator_priority
+    headline: SEGUI L'OPERATORE 112
+    normal_resq_speech: suppressed
+    visual_flow: continues
+    cpr_metronome: continues_ducked
+  USER_CALLING:
+    mode: calling
+    headline: CHIAMATA 112 IN CORSO
+    show_briefing: true
+call_briefing:
+  title: COSA COMUNICARE
+  items:
+  - id: where
+    label: DOVE SEI
+    fallback_prompt: Indica Comune, via/civico o un punto di riferimento chiaro.
+    display_fallback: Comunica la posizione
+  - id: what
+    label: COSA È SUCCESSO
+    fallback_prompt: Descrivi brevemente cosa è successo.
+    display_fallback: Descrivi cosa è successo
+  - id: people
+    label: QUANTE PERSONE
+    fallback_prompt: Indica quante persone sono coinvolte.
+    display_fallback: Conferma quante persone
+  - id: condition
+    label: COME STA LA PERSONA
+    fallback_prompt: Comunica se risponde, respira e se c'è un sanguinamento importante.
+    display_fallback: Descrivi come sta
+  - id: hazards
+    label: PERICOLI PRESENTI
+    fallback_prompt: Segnala traffico, incendio, fumo/gas, elettricità o veicolo instabile
+      se presenti.
+    display_fallback: Segnala eventuali pericoli
+  footer: Rispondi con calma alle domande dell'operatore e segui le sue istruzioni.
+emergency_brief_context:
+  type: read_only_observation_cache
+  must_not_affect_clinical_transitions: true
+  allowed_fields:
+  - scene_safety_observation
+  - multiple_casualties_observation
+  - major_bleeding_observation
+  - responsiveness_observation
+  - breathing_observation
+  - age_class
+  - current_state_family
+  - user_entered_location_if_available
+  forbidden_inference:
+  - diagnosis
+  - exact casualty number unless user actually entered it
+  - precise location unless entered/provided by an approved location service
+  - unobserved vital signs
+source_basis:
+- source: Ministero della Salute — 112/118 e Pronto Soccorso
+  url: https://www.salute.gov.it/new/it/tema/112-118-e-pronto-soccorso/il-numero-118-e-il-numero-di-emergenza-unico-europeo-112/
+  basis: Respond calmly; explain what happened and where; number of people involved;
+    communicate whether the person responds, breathes and bleeds.

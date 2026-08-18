@@ -1,0 +1,122 @@
+version: '1.1'
+scope: presentation_and_human_factors_only
+release_name: ResQ Prototype Architecture 1.1 — UX & Human Factors
+layout:
+  primary_orientation: portrait
+  reference_viewport_px:
+    width: 720
+    height: 1280
+  supported_orientation:
+  - portrait
+  - landscape
+  action_strip:
+    position: bottom
+    lanes:
+    - left
+    - center
+    - right
+    lane_width: 33.333%
+    rule: Cards never expand into an inactive lane; each active card stays vertically
+      aligned with the physical key below its lane.
+    inactive_lane: empty_visual_space_and_disabled_physical_key
+input_equivalence:
+  principle: Touch card and physical key are two input paths for the exact same semantic
+    event.
+  bindings:
+    left:
+      physical_key: 1
+      touch_lane: left
+    center:
+      physical_key: 2
+      touch_lane: center
+    right:
+      physical_key: 3
+      touch_lane: right
+  feedback:
+    physical_press: animate/highlight the corresponding on-screen card
+    touch_press: animate/highlight the same on-screen card and dispatch the identical
+      event
+    target_feedback_latency_ms_max: 100
+    pressed_visual_duration_ms: 140
+  inactive:
+    physical_key: disabled_and_unlit
+    touch_region: not_interactive
+    screen_card: not_rendered
+primary_control_rule:
+  min_active: 1
+  max_active: 3
+  rule: Render only controls that have a real clinical transition or a real service/UI
+    effect.
+  do_not_fill_slots_for_symmetry: true
+  position_grammar:
+    left: problem/negative/exception when applicable
+    center: uncertainty/support/neutral alternative when applicable
+    right: completion/confirmation/progression when applicable
+repeat:
+  purpose: Replay the current spoken instruction without changing clinical state.
+  policy: If there is exactly one other primary action and the center lane is free,
+    RIPETI may use center/physical key 2. If there are already two or three meaningful
+    primary actions, keep RIPETI as a separate header utility; never use it merely
+    to fill a third lane.
+  event: EV_REPEAT
+  color_role: support
+  icon: speaker_repeat
+  suppressed_when_operator_112_active: true
+  does_not_change_state: true
+color_system:
+  principle: Color expresses action/status semantics, never branding alone and never
+    acts as the sole cue.
+  non_color_redundancy:
+  - text_label
+  - fixed_spatial_lane
+  - icon_when_useful
+  contrast_target: WCAG-style >= 4.5:1 for normal text
+  tokens:
+    brand_primary:
+      bg: '#5B171A'
+      fg: '#FFFFFF'
+    danger:
+      bg: '#B42318'
+      fg: '#FFFFFF'
+      meaning: problem, worsening, missing critical item, dangerous status
+    warning:
+      bg: '#8A4B08'
+      fg: '#FFFFFF'
+      meaning: uncertainty/caution
+    success:
+      bg: '#067647'
+      fg: '#FFFFFF'
+      meaning: completed, resolved, stable, safe/proceed when contextually unambiguous
+    support:
+      bg: '#175CD3'
+      fg: '#FFFFFF'
+      meaning: repeat/help/re-evaluate/non-clinical support
+    neutral:
+      bg: '#475467'
+      fg: '#FFFFFF'
+      meaning: neutral choice, exit, skip, category without risk valence
+    category:
+      bg: '#344054'
+      fg: '#FFFFFF'
+      meaning: categorical selection where color must not suggest a preferred answer
+    call112:
+      bg: '#D92D20'
+      fg: '#FFFFFF'
+      meaning: emergency call presentation
+    inactive:
+      bg: '#EAECF0'
+      fg: '#98A2B3'
+  decision_bias_rule: In EVALUATION screens NO and SÌ use the same ResQ danger/red
+    role so color never suggests a preferred answer; NON SO uses warning/amber.
+    Position, label and icon carry the distinction. Pure categorical choices remain
+    neutral.
+screen_modes:
+  EVALUATION: questions and observations; answer choices carry no good/bad color bias
+  ACTION: operational task with function-oriented color roles
+  CRITICAL_ACTION: life-saving action with reduced secondary content
+  CALL_112: focused manual call activation with compact briefing
+operator_priority:
+  normal_resq_voice: suppress_or_pause
+  visual_instructions: continue
+  cpr_metronome: continue_at_reduced_audio_level
+  repeat_control: disabled_while_operator_active

@@ -18,6 +18,17 @@
   --ok: #0f766e;
   --warn: #b45309;
 
+  /* ResQ UX 1.1 semantic action roles. */
+  --role-brand: #5b171a;
+  --role-danger: #b42318;
+  --role-warning: #8a4b08;
+  --role-success: #067647;
+  --role-support: #175cd3;
+  --role-neutral: #475467;
+  --role-category: #344054;
+  --role-call112: #d92d20;
+  --role-fg: #ffffff;
+
   /*
    * Brand geometry: the logotype is built from 45deg cut corners, so surfaces
    * are chamfered (top-left / bottom-right) instead of rounded. Chamfered
@@ -99,7 +110,8 @@ button:focus-visible,
 .choice-button,
 .primary-pane,
 .item-pane,
-.diagnostic-button {
+.diagnostic-button,
+.soft-key-button {
   border-radius: 0;
   clip-path: var(--cut);
 }
@@ -110,7 +122,9 @@ button:focus-visible,
 .danger-button,
 .maintenance-button,
 .diagnostic-result,
-.error-banner {
+.error-banner,
+.service-banner,
+.material-panel {
   border-radius: 0;
   clip-path: var(--cut-sm);
 }
@@ -232,6 +246,12 @@ button:focus-visible,
   box-shadow: inset 0 0 0 2px rgba(235, 60, 58, 0.14);
 }
 
+.version-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .flag {
   font-size: 1.5rem;
   line-height: 1;
@@ -276,7 +296,7 @@ button:focus-visible,
   color: var(--muted);
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
 }
 
 .home-action {
@@ -316,6 +336,15 @@ button:focus-visible,
   cursor: pointer;
   font-size: 1.08rem;
   font-weight: 750;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.maintenance-button small {
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .footer-note {
@@ -447,6 +476,33 @@ button:focus-visible,
   align-content: center;
 }
 
+.emergency-screen .language-bar {
+  margin-bottom: 16px;
+}
+
+.state-header {
+  min-height: 92px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.state-header h1 {
+  margin: 4px 0 12px;
+  color: var(--maroon);
+  font-size: clamp(1.75rem, calc(var(--logical-vw) * 4.7), 2.2rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.state-code {
+  color: var(--red-strong);
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
 .primary-pane {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -463,12 +519,27 @@ button:focus-visible,
   min-height: 700px;
 }
 
+.emergency-screen .protocol-layout {
+  align-content: start;
+}
+
+.emergency-screen .clinical-pane {
+  height: auto;
+  min-height: 790px;
+  padding: clamp(24px, calc(var(--logical-vw) * 4.4), 34px);
+  gap: 24px;
+}
+
+.clinical-pane.operator-priority {
+  border: 4px solid var(--red-strong);
+}
+
 .step-label {
   color: var(--red-strong);
   font-weight: 850;
   text-transform: uppercase;
   font-size: 0.98rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .instruction {
@@ -476,6 +547,7 @@ button:focus-visible,
   font-size: clamp(1.95rem, calc(var(--logical-vw) * 5.5), 2.5rem);
   line-height: 1.12;
   font-weight: 820;
+  overflow-wrap: anywhere;
 }
 
 .question {
@@ -503,7 +575,8 @@ button:focus-visible,
 }
 
 .selection-screen .topbar,
-.diagnostics-screen .topbar {
+.diagnostics-screen .topbar,
+.maintenance-screen .topbar {
   grid-template-columns: minmax(0, 1fr) 140px;
   align-items: center;
 }
@@ -528,7 +601,163 @@ button:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 24px 0;
+  padding: 18px 0 12px;
+}
+
+.service-banner {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid transparent;
+  font-size: 1.08rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.operator-banner {
+  background: var(--red-strong);
+  color: white;
+}
+
+.call-banner {
+  background: #fff3d6;
+  color: #713f12;
+  border-color: #f0c36a;
+}
+
+.call-banner.urgent {
+  background: #fde8e7;
+  color: var(--red-dark);
+  border-color: #ee8f8c;
+}
+
+.material-panel {
+  margin-top: 24px;
+  padding: 18px;
+  display: grid;
+  gap: 7px;
+  background: #edf8f6;
+  color: #134e4a;
+  border: 2px solid #5aa9a2;
+  font-size: 1.08rem;
+  line-height: 1.3;
+}
+
+.material-panel strong,
+.material-panel span,
+.material-panel small {
+  overflow-wrap: anywhere;
+}
+
+.material-panel.unavailable {
+  background: #fdf0ef;
+  color: var(--red-dark);
+  border-color: var(--red-strong);
+}
+
+.material-fallback {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.inventory-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.inventory-line {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  align-items: center;
+  gap: 14px;
+}
+
+.inventory-line > span {
+  font-weight: 800;
+}
+
+.inventory-stepper {
+  height: 54px;
+  display: grid;
+  grid-template-columns: 48px 54px 48px;
+  align-items: center;
+  border: 1px solid #5aa9a2;
+  background: var(--panel);
+}
+
+.inventory-stepper button {
+  width: 48px;
+  height: 52px;
+  padding: 0;
+  background: transparent;
+  color: #134e4a;
+  cursor: pointer;
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+
+.inventory-stepper button:disabled {
+  color: #a8b8b6;
+  cursor: default;
+}
+
+.inventory-stepper strong {
+  text-align: center;
+  font-size: 1.15rem;
+}
+
+.soft-key-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  flex: none;
+}
+
+.soft-key-button {
+  position: relative;
+  min-width: 0;
+  min-height: 132px;
+  padding: 18px 16px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: clamp(1.15rem, calc(var(--logical-vw) * 3.4), 1.55rem);
+  font-weight: 900;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.soft-key-button small {
+  position: absolute;
+  right: 12px;
+  bottom: 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+.soft-key-left {
+  background: #fff4f3;
+  color: var(--red-dark);
+  border: 2px solid var(--red-strong);
+}
+
+.soft-key-center {
+  background: var(--maroon);
+  color: white;
+}
+
+.soft-key-right {
+  background: var(--red);
+  color: white;
+}
+
+.soft-key-button.empty {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .protocol-screen .primary-button,
@@ -627,6 +856,257 @@ button:focus-visible,
   margin-top: 20px;
 }
 
+.maintenance-statusbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 14px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.maintenance-statusbar > div {
+  min-width: 0;
+  padding: 14px 16px;
+  display: grid;
+  gap: 5px;
+  background: var(--panel);
+}
+
+.maintenance-statusbar small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.maintenance-statusbar strong {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+}
+
+.maintenance-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--line);
+}
+
+.maintenance-tabs button {
+  min-height: 58px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.maintenance-tabs button.active {
+  color: var(--red-dark);
+  box-shadow: inset 0 -4px 0 var(--red);
+}
+
+.maintenance-content {
+  min-width: 0;
+  padding-bottom: 28px;
+}
+
+.inventory-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 22px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.inventory-summary span {
+  min-width: 0;
+  padding: 12px 8px;
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.zone-list {
+  display: grid;
+  gap: 28px;
+}
+
+.inventory-zone {
+  min-width: 0;
+}
+
+.zone-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 2px 10px;
+  border-bottom: 2px solid var(--maroon);
+}
+
+.zone-heading h2 {
+  margin: 0 0 4px;
+  color: var(--maroon);
+  font-size: 1.16rem;
+}
+
+.zone-heading span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.zone-heading > strong {
+  flex: none;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.zone-items {
+  display: grid;
+}
+
+.maintenance-item {
+  padding: 14px 0 14px 12px;
+  border-bottom: 1px solid var(--line);
+  border-left: 5px solid var(--line);
+}
+
+.maintenance-item-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 86px;
+  align-items: center;
+  gap: 10px;
+}
+
+.maintenance-item-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.maintenance-item-copy > strong {
+  font-size: 0.98rem;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.maintenance-item-copy > span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.instance-status {
+  width: fit-content;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.maintenance-item-quantity {
+  display: grid;
+  justify-items: end;
+}
+
+.maintenance-item-quantity strong {
+  font-size: 1rem;
+}
+
+.maintenance-item-quantity span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.edit-instance-button,
+.save-instance-button {
+  min-height: 46px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.edit-instance-button {
+  background: var(--panel-soft);
+  color: var(--maroon);
+  border: 1px solid var(--line);
+}
+
+.instance-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0 2px;
+  padding: 14px;
+  background: var(--panel-soft);
+  border-top: 1px solid var(--line);
+}
+
+.instance-editor label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.instance-editor input,
+.instance-editor select {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid #c9b8b6;
+  border-radius: 0;
+  font: inherit;
+}
+
+.save-instance-button {
+  align-self: end;
+  background: var(--maroon);
+  color: white;
+}
+
+.status-READY,
+.status-AVAILABLE {
+  color: var(--ok);
+}
+
+.status-MAINTENANCE,
+.status-PENDING_USE {
+  color: var(--warn);
+}
+
+.status-REFILL_REQUIRED,
+.status-SUSPECTED_MISSING,
+.status-MISSING,
+.status-USED,
+.status-EXPIRED,
+.status-NON_OPERATIONAL {
+  color: var(--red-dark);
+}
+
+.status-border-READY {
+  border-left-color: var(--ok);
+}
+
+.status-border-MAINTENANCE {
+  border-left-color: #d69e2e;
+}
+
+.status-border-REFILL_REQUIRED,
+.status-border-NON_OPERATIONAL {
+  border-left-color: var(--red-strong);
+}
+
 .done-screen .primary-pane {
   flex: 0;
 }
@@ -705,7 +1185,7 @@ button:focus-visible,
 
   .subtitle {
     font-size: 0.92rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0;
   }
 
   .bar-logo {
@@ -731,5 +1211,686 @@ button:focus-visible,
 
   .choice-button {
     min-height: 82px;
+  }
+
+  .emergency-screen .clinical-pane {
+    min-height: 660px;
+  }
+
+  .soft-key-row {
+    gap: 8px;
+  }
+
+  .soft-key-button {
+    min-height: 106px;
+    padding: 12px 9px 26px;
+    font-size: 1.05rem;
+  }
+
+  .inventory-line {
+    grid-template-columns: 1fr;
+  }
+
+  .maintenance-statusbar,
+  .inventory-summary,
+  .instance-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .maintenance-item-main {
+    grid-template-columns: minmax(0, 1fr) 64px;
+  }
+
+  .edit-instance-button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Emergency presentation: UX & Human Factors 1.1. */
+.emergency-screen .language-bar {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.emergency-screen .state-header {
+  min-height: 88px;
+  margin-bottom: 12px;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.emergency-screen .state-header > div {
+  min-width: 0;
+}
+
+.emergency-screen .state-header h1 {
+  margin: 4px 0 10px;
+  font-size: 1.9rem;
+}
+
+.header-repeat {
+  width: 126px;
+  min-width: 126px;
+  height: 58px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--role-support);
+  color: var(--role-fg);
+  cursor: pointer;
+  clip-path: var(--cut-sm);
+}
+
+.header-repeat span {
+  font-size: 1.05rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.header-repeat strong {
+  font-size: 0.88rem;
+}
+
+.header-repeat:disabled {
+  background: #eaecf0;
+  color: #667085;
+  cursor: default;
+}
+
+.emergency-screen .clinical-pane {
+  min-height: 820px;
+  padding: 26px;
+  gap: 22px;
+}
+
+.emergency-screen .instruction-copy {
+  justify-content: flex-start;
+  padding: 10px 0 8px;
+}
+
+.emergency-screen .instruction {
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.call112-panel {
+  width: 100%;
+  margin-bottom: 22px;
+  overflow: hidden;
+  border: 3px solid var(--role-call112);
+  background: #fff;
+  clip-path: var(--cut-sm);
+}
+
+.call112-headline {
+  min-height: 72px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--role-call112);
+  color: #fff;
+}
+
+.call112-headline > span {
+  min-width: 58px;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.call112-headline strong {
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.call112-panel.mode-operator_priority {
+  border-width: 5px;
+}
+
+.call-briefing {
+  padding: 16px;
+}
+
+.call-briefing h3 {
+  margin: 0 0 10px;
+  color: var(--role-call112);
+  font-size: 1rem;
+}
+
+.call-briefing dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #d0d5dd;
+  border-left: 1px solid #d0d5dd;
+}
+
+.briefing-item {
+  min-width: 0;
+  padding: 9px 10px;
+  border-right: 1px solid #d0d5dd;
+  border-bottom: 1px solid #d0d5dd;
+}
+
+.briefing-item dt {
+  margin-bottom: 3px;
+  color: #475467;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.briefing-item dd {
+  margin: 0;
+  color: #101828;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.briefing-item.observed {
+  background: #ecfdf3;
+}
+
+.call-briefing > p {
+  margin: 11px 0 0;
+  color: #344054;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.metronome-band {
+  min-height: 74px;
+  margin-top: 22px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 2px solid #98a2b3;
+  border-bottom: 2px solid #98a2b3;
+}
+
+.metronome-pulse {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border: 4px solid var(--role-support);
+  border-radius: 50%;
+  background: #eff8ff;
+  transition: transform 80ms ease, background 80ms ease;
+}
+
+.metronome-pulse.beat {
+  transform: scale(1.18);
+  background: var(--role-support);
+}
+
+.metronome-band strong,
+.metronome-band small {
+  display: block;
+}
+
+.metronome-band strong {
+  color: #101828;
+  font-size: 0.98rem;
+}
+
+.metronome-band small {
+  margin-top: 3px;
+  color: #475467;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.metronome-band.ducked::after {
+  content: "AUDIO RIDOTTO";
+  margin-left: auto;
+  color: #475467;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.soft-key-row {
+  width: 100%;
+  min-height: 132px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  flex: none;
+}
+
+.soft-key-lane {
+  min-width: 0;
+  height: 132px;
+}
+
+.soft-key-lane.lane-empty {
+  pointer-events: none;
+}
+
+.soft-key-button {
+  width: 100%;
+  height: 132px;
+  min-height: 132px;
+  padding: 16px 12px 28px;
+  display: grid;
+  grid-template-rows: 30px minmax(0, 1fr);
+  place-items: center;
+  color: var(--role-fg);
+  font-size: 1.15rem;
+  line-height: 1.05;
+  filter: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.soft-key-button .control-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.soft-key-button .control-label {
+  max-width: 100%;
+  align-self: center;
+  overflow-wrap: anywhere;
+}
+
+.soft-key-button small {
+  color: inherit;
+}
+
+.soft-key-button.role-danger { background: var(--role-danger); }
+.soft-key-button.role-warning { background: var(--role-warning); }
+.soft-key-button.role-success { background: var(--role-success); }
+.soft-key-button.role-support { background: var(--role-support); }
+.soft-key-button.role-neutral { background: var(--role-neutral); }
+.soft-key-button.role-category { background: var(--role-category); }
+
+.soft-key-button.pressed,
+.soft-key-button:active {
+  transform: scale(0.96);
+  filter: brightness(0.78);
+  box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 500px) {
+  .emergency-screen .state-header h1 {
+    font-size: 1.55rem;
+  }
+
+  .header-repeat {
+    width: 96px;
+    min-width: 96px;
+  }
+
+  .emergency-screen .clinical-pane {
+    min-height: 680px;
+    padding: 18px;
+  }
+
+  .emergency-screen .instruction {
+    font-size: 1.55rem;
+  }
+
+  .call-briefing dl {
+    grid-template-columns: 1fr;
+  }
+
+  .soft-key-row {
+    gap: 8px;
+  }
+
+  .soft-key-lane,
+  .soft-key-button {
+    height: 108px;
+    min-height: 108px;
+  }
+
+  .soft-key-button {
+    padding: 10px 7px 24px;
+    font-size: 0.98rem;
+  }
+}
+
+/* UX 1.1 final correction pass. */
+.emergency-screen .version-label {
+  display: none;
+}
+
+.emergency-status-strip {
+  min-height: 42px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.status-strip-item {
+  min-width: 0;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #344054;
+  border-left: 4px solid #667085;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.status-strip-item.status-call112 {
+  color: #b42318;
+  border-color: var(--role-call112);
+}
+
+.status-strip-item.status-call112.operator {
+  background: var(--role-call112);
+  color: #ffffff;
+}
+
+.status-strip-item.status-material {
+  color: #13534a;
+  border-color: #0f766e;
+}
+
+.screen-mode-evaluation .step-label {
+  color: #475467;
+}
+
+.screen-mode-critical-action .clinical-pane {
+  border-width: 2px;
+  border-color: #98a2b3;
+  filter: none;
+}
+
+.screen-mode-call-112 .clinical-pane {
+  border: 3px solid var(--role-call112);
+}
+
+.call112-panel.call-now-focus {
+  margin-bottom: 14px;
+  border-width: 4px;
+  clip-path: none;
+}
+
+.call-now-focus .call112-headline {
+  min-height: 190px;
+  padding: 20px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.call-now-focus .call112-headline strong {
+  font-size: 1.65rem;
+  line-height: 1.05;
+}
+
+.call-now-focus .call112-headline > span {
+  min-width: 0;
+  font-size: 5.8rem;
+  line-height: 0.95;
+}
+
+.call-now-focus .call-briefing {
+  padding: 15px 18px 16px;
+}
+
+.call-now-focus .call-briefing h3 {
+  margin: 0 0 9px;
+  color: #101828;
+  font-size: 1rem;
+}
+
+.call-now-focus .call-briefing ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #d0d5dd;
+  list-style: none;
+}
+
+.call-now-focus .briefing-item {
+  min-height: 48px;
+  padding: 8px 7px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 7px;
+  border-right: 0;
+  border-bottom: 1px solid #d0d5dd;
+}
+
+.call-now-focus .briefing-item > span {
+  grid-row: 1 / span 2;
+  color: var(--role-call112);
+  font-size: 1.05rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.call-now-focus .briefing-item strong {
+  color: #101828;
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+.call-now-focus .briefing-item small {
+  color: #344054;
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.call-now-focus .briefing-item.prompt small {
+  color: #475467;
+  font-style: italic;
+  font-weight: 650;
+}
+
+.call-now-focus .call-briefing > p {
+  margin: 10px 0 0;
+  color: #344054;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.critical-cpr-core {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.aed-use-guide {
+  width: 100%;
+  padding: 34px 22px;
+  display: grid;
+  gap: 16px;
+  border-top: 5px solid var(--role-warning);
+  border-bottom: 1px solid #98a2b3;
+  text-align: center;
+}
+
+.aed-use-guide h2,
+.aed-use-guide p,
+.aed-use-guide small {
+  margin: 0;
+}
+
+.aed-use-guide h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 2.4rem;
+  line-height: 1.05;
+}
+
+.aed-use-guide p {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.aed-use-guide strong {
+  color: #8a4b08;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.aed-use-guide small {
+  color: #344054;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.critical-cpr-core h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 3.2rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.metronome-band.critical {
+  min-height: 190px;
+  margin: 20px 0 14px;
+  padding: 16px 20px;
+  justify-content: center;
+  gap: 28px;
+  border-width: 3px;
+  background: #f9fafb;
+}
+
+.metronome-band.critical .metronome-pulse {
+  width: 112px;
+  height: 112px;
+  border-width: 8px;
+}
+
+.metronome-band.critical strong {
+  font-size: 2.35rem;
+  line-height: 1;
+}
+
+.metronome-band.critical small {
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+.aed-reminder {
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #344054;
+  color: #ffffff;
+  border-left: 7px solid #fdb022;
+  font: inherit;
+}
+
+.aed-availability-cta {
+  border: 3px solid #fdb022;
+  background: #fff7e6;
+  color: #101828;
+  cursor: pointer;
+  transition: background-color 100ms ease, transform 100ms ease;
+}
+
+.aed-availability-cta:hover,
+.aed-availability-cta:focus-visible {
+  background: #ffedc2;
+  outline: 3px solid #175cd3;
+  outline-offset: 2px;
+}
+
+.aed-availability-cta:active,
+.aed-availability-cta.pressed {
+  background: #fddc8a;
+  transform: translateY(2px);
+}
+
+.aed-reminder.aed-present {
+  background: #13534a;
+  border-left-color: #6ce9a6;
+}
+
+.aed-reminder.aed-present span {
+  color: #6ce9a6;
+}
+
+.aed-reminder span {
+  color: #fdb022;
+  font-size: 1.6rem;
+}
+
+.aed-reminder strong {
+  font-size: 1.08rem;
+}
+
+.critical-lead {
+  margin: 16px 0 0;
+  color: #101828;
+  font-size: 1.2rem;
+  font-weight: 850;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.critical-guidance {
+  margin-top: 8px;
+  display: grid;
+  gap: 3px;
+  color: #475467;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.soft-key-button {
+  padding-bottom: 16px;
+}
+
+.soft-key-button .control-icon {
+  min-height: 30px;
+}
+
+@media (max-width: 500px) {
+  .call-now-focus .call112-headline {
+    min-height: 150px;
+  }
+
+  .call-now-focus .call112-headline > span {
+    font-size: 4.6rem;
+  }
+
+  .critical-cpr-core h2 {
+    font-size: 2.45rem;
+  }
+
+  .metronome-band.critical {
+    min-height: 150px;
+  }
+
+  .metronome-band.critical .metronome-pulse {
+    width: 82px;
+    height: 82px;
+  }
+
+  .metronome-band.critical strong {
+    font-size: 1.7rem;
   }
 }

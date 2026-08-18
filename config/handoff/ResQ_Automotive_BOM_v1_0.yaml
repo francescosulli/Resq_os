@@ -1,0 +1,310 @@
+bom_version: '1.0'
+product_profile: ResQ_Automotive_Prototype
+status: prototype_frozen_for_software_integration
+design_principles:
+  lean_bom: true
+  no_medicines: true
+  paper_first_aid_manual: false
+  paper_inventory_list: false
+  digital_inventory_required: true
+  resq_connect_sync_required: true
+  led_granularity: zone_not_individual_item
+  internal_locator: passive_slots_and_screen_visuals
+  thermal_blankets: 2
+  formal_DIN_conformity_claim: false
+zones:
+  QUICK_ACCESS:
+    name_it: Accesso rapido
+    led_id: LED_QUICK_ACCESS
+    priority: 0
+  C1_EMORRAGIE:
+    name_it: Emorragie
+    led_id: LED_C1
+    priority: 1
+  C2_FERITE:
+    name_it: Ferite e medicazioni
+    led_id: LED_C2
+    priority: 2
+  C3_TRAUMA:
+    name_it: Trauma e fissaggio
+    led_id: LED_C3
+    priority: 3
+  C4_TERMICO:
+    name_it: Protezione termica
+    led_id: LED_C4
+    priority: 4
+items:
+  GLOVES_NITRILE:
+    name_it: Guanti monouso
+    quantity_expected: 8
+    unit: guanto
+    zone: QUICK_ACCESS
+    slot: QA_A
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: high
+  SCISSORS_FIRST_AID:
+    name_it: Forbici da primo soccorso
+    quantity_expected: 1
+    unit: pezzo
+    zone: QUICK_ACCESS
+    slot: QA_B
+    inventory_tracking: count
+    expiry_tracking: false
+    criticality: medium
+  CPR_FACE_SHIELD:
+    name_it: Barriera CPR con valvola unidirezionale
+    quantity_expected: 1
+    unit: pezzo
+    zone: QUICK_ACCESS
+    slot: QA_C
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: high
+  MEDICAL_MASK_TYPE_I:
+    name_it: Mascherina medica ≥ Tipo I
+    quantity_expected: 2
+    unit: pezzo
+    zone: QUICK_ACCESS
+    slot: QA_D
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: low
+  TOURNIQUET_COMMERCIAL:
+    name_it: Tourniquet commerciale
+    quantity_expected: 1
+    unit: pezzo
+    zone: C1_EMORRAGIE
+    slot: C1_A
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: critical
+  HEMOSTATIC_DRESSING:
+    name_it: Garza/medicazione emostatica
+    quantity_expected: 1
+    unit: pezzo
+    zone: C1_EMORRAGIE
+    slot: C1_B
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: critical
+  DRESSING_G:
+    name_it: Pacchetto medicazione sterile G
+    quantity_expected: 1
+    unit: pezzo
+    zone: C1_EMORRAGIE
+    slot: C1_C
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: high
+  DRESSING_M_C1:
+    name_it: Pacchetto medicazione sterile M – Emorragie
+    quantity_expected: 1
+    unit: pezzo
+    zone: C1_EMORRAGIE
+    slot: C1_D
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: high
+  STERILE_COMPRESS_10X10_C1:
+    name_it: Compresse sterili 10×10 – Emorragie
+    quantity_expected: 3
+    unit: compressa
+    zone: C1_EMORRAGIE
+    slot: C1_E
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: high
+  DRESSING_K:
+    name_it: Pacchetto medicazione sterile K
+    quantity_expected: 1
+    unit: pezzo
+    zone: C2_FERITE
+    slot: C2_A
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  DRESSING_M_C2:
+    name_it: Pacchetto medicazione sterile M – Ferite
+    quantity_expected: 1
+    unit: pezzo
+    zone: C2_FERITE
+    slot: C2_B
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  STERILE_COMPRESS_10X10_C2:
+    name_it: Compresse sterili 10×10 – Ferite
+    quantity_expected: 3
+    unit: compressa
+    zone: C2_FERITE
+    slot: C2_C
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  STERILE_DRAPE_60X80:
+    name_it: Telo sterile 60×80 cm
+    quantity_expected: 1
+    unit: pezzo
+    zone: C2_FERITE
+    slot: C2_D
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  ADHESIVE_TAPE_ROLL:
+    name_it: Cerotto adesivo in rotolo 5 m × 2,5 cm
+    quantity_expected: 1
+    unit: rotolo
+    zone: C2_FERITE
+    slot: C2_E
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: low
+  PLASTER_SET_DIN:
+    name_it: Assortimento cerotti DIN
+    quantity_expected: 14
+    unit: cerotto
+    zone: C2_FERITE
+    slot: C2_F
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: low
+  SKIN_WIPE:
+    name_it: Salvietta per cute integra
+    quantity_expected: 2
+    unit: pezzo
+    zone: C2_FERITE
+    slot: C2_G
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: low
+  FIXATION_BANDAGE_FB6:
+    name_it: Benda di fissaggio FB6
+    quantity_expected: 2
+    unit: pezzo
+    zone: C3_TRAUMA
+    slot: C3_A
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  FIXATION_BANDAGE_FB8:
+    name_it: Benda di fissaggio FB8
+    quantity_expected: 3
+    unit: pezzo
+    zone: C3_TRAUMA
+    slot: C3_B
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  TRIANGULAR_BANDAGE:
+    name_it: Benda triangolare
+    quantity_expected: 1
+    unit: pezzo
+    zone: C3_TRAUMA
+    slot: C3_C
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+  RESEALABLE_BAG:
+    name_it: Sacchetto impermeabile richiudibile
+    quantity_expected: 2
+    unit: pezzo
+    zone: C3_TRAUMA
+    slot: C3_D
+    inventory_tracking: count
+    expiry_tracking: false
+    criticality: low
+  THERMAL_BLANKET:
+    name_it: Coperta isotermica
+    quantity_expected: 2
+    unit: pezzo
+    zone: C4_TERMICO
+    slot: C4_A
+    inventory_tracking: count
+    expiry_tracking: true
+    criticality: medium
+material_requests:
+  PPE_GLOVES:
+    preferred:
+    - GLOVES_NITRILE
+    selection_policy: single
+  CPR_FACE_SHIELD:
+    preferred:
+    - CPR_FACE_SHIELD
+    selection_policy: single
+  MAJOR_BLEED_DRESSING:
+    preferred:
+    - DRESSING_G
+    fallback:
+    - DRESSING_M_C1
+    - STERILE_COMPRESS_10X10_C1
+    selection_policy: first_available
+  BLEED_FALLBACK:
+    preferred:
+    - DRESSING_M_C1
+    fallback:
+    - STERILE_COMPRESS_10X10_C1
+    selection_policy: first_available
+  TOURNIQUET:
+    preferred:
+    - TOURNIQUET_COMMERCIAL
+    selection_policy: single
+  HEMOSTATIC_DRESSING:
+    preferred:
+    - HEMOSTATIC_DRESSING
+    selection_policy: single
+  STERILE_WOUND_DRESSING:
+    preferred:
+    - DRESSING_K
+    fallback:
+    - DRESSING_M_C2
+    - STERILE_COMPRESS_10X10_C2
+    selection_policy: first_available
+  WOUND_FALLBACK:
+    preferred:
+    - STERILE_COMPRESS_10X10_C2
+    fallback:
+    - PLASTER_SET_DIN
+    selection_policy: first_available
+  TRAUMA_SUPPORT:
+    preferred:
+    - TRIANGULAR_BANDAGE
+    fallback:
+    - FIXATION_BANDAGE_FB6
+    - FIXATION_BANDAGE_FB8
+    selection_policy: contextual_first_available
+  THERMAL_BLANKET:
+    preferred:
+    - THERMAL_BLANKET
+    selection_policy: single
+  CUT_OR_EXPOSE:
+    preferred:
+    - SCISSORS_FIRST_AID
+    selection_policy: single
+  DRESSING_FIXATION:
+    preferred:
+    - ADHESIVE_TAPE_ROLL
+    fallback:
+    - FIXATION_BANDAGE_FB6
+    - FIXATION_BANDAGE_FB8
+    selection_policy: first_available
+  LARGE_WOUND_COVER:
+    preferred:
+    - STERILE_DRAPE_60X80
+    fallback:
+    - DRESSING_M_C2
+    selection_policy: first_available
+  AMPUTATED_PART_CONTAINER:
+    preferred:
+    - RESEALABLE_BAG
+    selection_policy: quantity_required_2_if_available
+inventory_rules:
+  during_emergency: mark resolved physical SKU as PENDING_USE; do not decrement yet
+  post_event: allow per-SKU and per-quantity correction before confirm
+  after_confirm: decrement confirmed quantities and recompute readiness
+  sync: persist locally first; sync non-blocking to ResQ Connect
+  readiness_states:
+  - READY
+  - MAINTENANCE
+  - REFILL_REQUIRED
+  - NON_OPERATIONAL

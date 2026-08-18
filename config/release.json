@@ -1,0 +1,45 @@
+{
+  "product": "ResQ",
+  "release": "Prototype Architecture 1.1",
+  "release_focus": "UX & Human Factors",
+  "candidate_tag": "resq-prototype-v1.1",
+  "clinical_flow": "1.2",
+  "state_machine": "1.2",
+  "automotive_bom": "1.0",
+  "ux_human_factors": "1.1",
+  "artifact_name": "ResQ_Prototype_Architecture_v1.1.zip",
+  "resq_connect_transport": "not_implemented",
+  "clinically_certified": false,
+  "source_of_truth": {
+    "clinical_flow": {
+      "filename": "ResQ_flow_nodes_v1_2.json",
+      "sha256": "d9ff68c7b637f8cf2d92448ac954d511b1e7ed825ed9a0afec2fb3c7bfb8317a"
+    },
+    "state_machine": {
+      "filename": "ResQ_state_machine_spec_v1_2.yaml",
+      "sha256": "a70d5718eb50a47b1c79b562e9b392b45f9d037161d8ee51f57b666f80debf19"
+    },
+    "automotive_bom": {
+      "filename": "ResQ_Automotive_BOM_v1_0.yaml",
+      "sha256": "61d08212f7cdb303ad3707bf2ffe58f6bf75f062915e1482c1580bb91e76ed0c"
+    }
+  },
+  "presentation_sources": {
+    "ux_spec": {
+      "filename": "ResQ_UX_spec_v1_1.yaml",
+      "sha256": "fc32da2dad3d97c4652756597bafcda7f1550dab6aff56a15c1f5a821de69061"
+    },
+    "ui_tokens": {
+      "filename": "ResQ_UI_tokens_v1_1.yaml",
+      "sha256": "da705bd19681512458ad78dca67b64d65575fe3dc31859c566badd7435b42b75"
+    },
+    "call112_ux": {
+      "filename": "ResQ_112_UX_v1_1.yaml",
+      "sha256": "19a564081d99bc6ed4acce3a1059be5c0001410410108401d3370ae1ac3e6cc2"
+    },
+    "cpr_metronome_ux": {
+      "filename": "ResQ_CPR_metronome_v1_1.yaml",
+      "sha256": "780c0b9436ccc56e0ba2ce746529a9beb04df3c34bbb6123648df282cba67a9b"
+    }
+  }
+}

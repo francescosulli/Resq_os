@@ -1,305 +1,217 @@
 const app = document.getElementById("app");
 
-const LANGUAGE_KEY = "resq_language";
-const LANGUAGES = [
-  { code: "it", flag: "🇮🇹", label: "Italiano" },
-  { code: "en", flag: "🇬🇧", label: "English" },
-];
-
-let protocols = [];
 let lastError = "";
 let diagnosticMessage = "";
 let currentDiagnosticTest = "";
 let lastState = null;
 let currentView = "home";
-let currentLanguage = localStorage.getItem(LANGUAGE_KEY) || "it";
+let maintenanceTab = "inventory";
+let editingSku = null;
+let feedbackSequence = 0;
+let feedbackPolling = false;
+let laneInputLockedUntil = 0;
 
-if (!LANGUAGES.some((language) => language.code === currentLanguage)) {
-  currentLanguage = "it";
+const CONTROL_ICONS = {
+  adult: "•",
+  alert: "!",
+  arrow_right: "→",
+  bandage: "+",
+  body: "•",
+  check: "✓",
+  check_circle: "✓",
+  child: "•",
+  choice: "•",
+  close: "×",
+  droplet: "●",
+  edit: "✎",
+  environment: "•",
+  exit: "×",
+  flame: "▲",
+  heart_pulse: "♥",
+  help: "?",
+  home: "⌂",
+  infant: "•",
+  lightning: "⚡",
+  limb: "•",
+  lungs: "↕",
+  minus: "−",
+  more: "…",
+  people: "👥",
+  refresh: "↻",
+  search_off: "⌕̸",
+  shield_check: "✓",
+  skip: "⇥",
+  snowflake: "✣",
+  speaker_repeat: "🔊↻",
+  trend_down: "↓",
+  x: "×",
+};
+
+class CompressionMetronome {
+  constructor() {
+    this.context = null;
+    this.active = false;
+    this.bpm = 110;
+    this.nextBeatAt = 0;
+    this.timer = null;
+    this.operatorDucked = false;
+    this.speechDucked = false;
+    this.duckDb = -12;
+  }
+
+  async resumeFromGesture() {
+    const AudioClock = window.AudioContext || window.webkitAudioContext;
+    if (!AudioClock) return;
+    if (!this.context) this.context = new AudioClock();
+    if (this.context.state === "suspended") await this.context.resume();
+    if (this.active && !this.timer) {
+      this.nextBeatAt = this.context.currentTime + 0.04;
+      this.schedule();
+    }
+  }
+
+  update(config = {}) {
+    if (!config.active) {
+      this.stop();
+      return;
+    }
+    this.bpm = Number(config.target_bpm || 110);
+    this.operatorDucked = Boolean(config.operator_ducked);
+    this.duckDb = Number(config.duck_db ?? -12);
+    if (this.active) return;
+    this.active = true;
+    if (this.context?.state === "running") {
+      this.nextBeatAt = this.context.currentTime + 0.04;
+      this.schedule();
+    }
+  }
+
+  schedule() {
+    if (!this.active || !this.context || this.context.state !== "running") {
+      this.timer = null;
+      return;
+    }
+    const horizon = this.context.currentTime + 0.12;
+    while (this.nextBeatAt < horizon) {
+      this.scheduleBeat(this.nextBeatAt);
+      this.nextBeatAt += 60 / this.bpm;
+    }
+    this.timer = window.setTimeout(() => this.schedule(), 25);
+  }
+
+  scheduleBeat(beatAt) {
+    const oscillator = this.context.createOscillator();
+    const gain = this.context.createGain();
+    const duckDb = this.operatorDucked ? this.duckDb : this.speechDucked ? -8 : 0;
+    const duck = 10 ** (duckDb / 20);
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, beatAt);
+    gain.gain.setValueAtTime(0.0001, beatAt);
+    gain.gain.exponentialRampToValueAtTime(0.1 * duck, beatAt + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, beatAt + 0.045);
+    oscillator.connect(gain).connect(this.context.destination);
+    oscillator.start(beatAt);
+    oscillator.stop(beatAt + 0.05);
+
+    const delay = Math.max(0, (beatAt - this.context.currentTime) * 1000);
+    window.setTimeout(() => {
+      if (!this.active) return;
+      const pulse = document.querySelector(".metronome-pulse");
+      pulse?.classList.remove("beat");
+      requestAnimationFrame(() => pulse?.classList.add("beat"));
+    }, delay);
+  }
+
+  stop() {
+    this.active = false;
+    if (this.timer) window.clearTimeout(this.timer);
+    this.timer = null;
+    document.querySelector(".metronome-pulse")?.classList.remove("beat");
+  }
+
+  setSpeechActive(active) {
+    this.speechDucked = Boolean(active);
+  }
 }
-document.documentElement.lang = currentLanguage;
+
+const compressionMetronome = new CompressionMetronome();
+
+class AudioGuideService {
+  constructor() {
+    this.lastSequence = -1;
+    this.utterance = null;
+  }
+
+  sync(audioState = {}) {
+    const sequence = Number(audioState.playback_sequence ?? -1);
+    if (sequence === this.lastSequence) return;
+    this.lastSequence = sequence;
+    if (audioState.playback_command !== "SPEAK" || audioState.voice_suppressed) {
+      this.stop();
+      return;
+    }
+    this.speak(String(audioState.last_prompt || ""));
+  }
+
+  speak(text) {
+    if (!text || !("speechSynthesis" in window)) return;
+    this.stop();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "it-IT";
+    utterance.rate = 0.94;
+    utterance.pitch = 1;
+    const voices = window.speechSynthesis.getVoices();
+    utterance.voice = voices.find((voice) => voice.lang?.toLowerCase().startsWith("it")) || null;
+    utterance.onstart = () => compressionMetronome.setSpeechActive(true);
+    utterance.onend = () => compressionMetronome.setSpeechActive(false);
+    utterance.onerror = () => compressionMetronome.setSpeechActive(false);
+    this.utterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  stop() {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    this.utterance = null;
+    compressionMetronome.setSpeechActive(false);
+  }
+}
+
+const audioGuide = new AudioGuideService();
 
 const UI_TEXT = {
-  it: {
-    defaultError: "Errore ResQ",
-    languageLabel: "Lingua",
-    emergencyStart: "AVVIA EMERGENZA",
-    maintenance: "Manutenzione / Diagnostica",
-    footerNote: "Demo dimostrativa. In emergenza reale chiama il 112 e segui personale formato.",
-    selectionTitle: "Selezione emergenza",
-    selectionSubtitle: "Scegli il protocollo dimostrativo piu' vicino alla situazione.",
-    home: "Home",
-    back: "Indietro",
-    repeatAudio: "Ripeti audio",
-    question: "Domanda",
-    instruction: "Istruzione",
-    yes: "S&Igrave;",
-    no: "NO",
-    requestedObject: "Oggetto richiesto",
-    take: "Prendi",
-    compartment: "Vano",
-    confirmItem: "Ho preso il presidio",
-    continue: "Continua",
-    endProtocol: "Fine protocollo",
-    requestedItems: "Presidi richiesti",
-    noRequestedItems: "Nessun presidio richiesto",
-    answers: "Risposte",
-    noAnswers: "Nessuna risposta registrata",
-    backHome: "Torna alla home",
-    diagnostics: "Diagnostica",
-    diagnosticsSubtitle: "Hardware in modalita' simulata",
-    testCompartments: "Test vani",
-    testRefillNfc: "Refill NFC",
-    testAudio: "Test audio",
-    appStatus: "Stato app",
-    ready: "Pronto",
-    diagnosticCompartmentsDone: "Test illuminazione vani completato",
-    diagnosticRefillNfcDone: "[NFC REFILL] Refill simulato registrato",
-    diagnosticAudioDone: "[AUDIO] Test guida audio simulata completato",
-    diagnosticStatusDone: "App attiva, backend operativo, hardware in simulazione",
-  },
-  en: {
-    defaultError: "ResQ error",
-    languageLabel: "Language",
-    emergencyStart: "START EMERGENCY",
-    maintenance: "Maintenance / Diagnostics",
-    footerNote: "Demonstration only. In a real emergency, call 112 and follow trained responders.",
-    selectionTitle: "Emergency selection",
-    selectionSubtitle: "Choose the demonstration protocol closest to the situation.",
-    home: "Home",
-    back: "Back",
-    repeatAudio: "Repeat audio",
-    question: "Question",
-    instruction: "Instruction",
-    yes: "YES",
-    no: "NO",
-    requestedObject: "Requested item",
-    take: "Take",
-    compartment: "Compartment",
-    confirmItem: "I have taken the item",
-    continue: "Continue",
-    endProtocol: "Protocol complete",
-    requestedItems: "Requested items",
-    noRequestedItems: "No requested items",
-    answers: "Answers",
-    noAnswers: "No answers recorded",
-    backHome: "Back to home",
-    diagnostics: "Diagnostics",
-    diagnosticsSubtitle: "Hardware in simulated mode",
-    testCompartments: "Compartments test",
-    testRefillNfc: "Refill NFC",
-    testAudio: "Audio test",
-    appStatus: "App status",
-    ready: "Ready",
-    diagnosticCompartmentsDone: "Compartment lighting test completed",
-    diagnosticRefillNfcDone: "[NFC REFILL] Simulated refill registered",
-    diagnosticAudioDone: "[AUDIO] Simulated audio guide test completed",
-    diagnosticStatusDone: "App active, backend operational, hardware simulated",
-  },
+  defaultError: "Errore ResQ",
+  languageLabel: "Lingua clinica",
+  emergencyStart: "AVVIA EMERGENZA",
+  maintenance: "Inventario / Manutenzione",
+  footerNote: "Prototipo non validato clinicamente. In emergenza reale chiama il 112 e segui l'operatore.",
+  home: "Home",
+  diagnostics: "Diagnostica",
+  diagnosticsSubtitle: "Hardware e servizi locali",
+  testCompartments: "Test vani",
+  testRefillNfc: "Refill NFC",
+  testAudio: "Test audio",
+  appStatus: "Stato app",
+  ready: "Pronto",
+  diagnosticCompartmentsDone: "Test illuminazione vani completato",
+  diagnosticRefillNfcDone: "[NFC REFILL] Refill simulato registrato",
+  diagnosticAudioDone: "[AUDIO] Test guida audio simulata completato",
+  diagnosticStatusDone: "App 1.1 attiva, BOM e servizi offline pronti",
 };
 
-const ITEM_I18N = {
-  en: {
-    gloves: {
-      name: "Disposable gloves",
-      compartment: "Protection compartment",
-    },
-    thermal_blanket: {
-      name: "Thermal blanket",
-      compartment: "Blanket compartment",
-    },
-    sterile_gauze: {
-      name: "Sterile gauze",
-      compartment: "Gauze compartment",
-    },
-    bandage: {
-      name: "Bandage",
-      compartment: "Bandage compartment",
-    },
-    plaster_gauze: {
-      name: "Plaster or gauze",
-      compartment: "Dressings compartment",
-    },
-    sterile_cover: {
-      name: "Non-adherent sterile gauze or sterile drape",
-      compartment: "Sterile supplies compartment",
-    },
-    triangular_bandage: {
-      name: "Triangular bandage or drape",
-      compartment: "Support compartment",
-    },
-  },
+const KIT_STATUS_LABELS = {
+  READY: "PRONTO",
+  MAINTENANCE: "MANUTENZIONE",
+  REFILL_REQUIRED: "RIFORNIMENTO",
+  NON_OPERATIONAL: "NON OPERATIVO",
 };
 
-const TEXT_I18N = {
-  en: {
-    "Protocollo dimostrativo: non sostituisce formazione, 112 o personale sanitario.":
-      "Demonstration protocol: it does not replace training, 112 or medical personnel.",
-    "Gestione persona incosciente completata in modalita' demo.":
-      "Unconscious person protocol completed in demo mode.",
-    "Gestione sanguinamento completata in modalita' demo.":
-      "Bleeding protocol completed in demo mode.",
-    "Gestione ustione completata in modalita' demo.":
-      "Burn protocol completed in demo mode.",
-    "Gestione trauma/frattura completata in modalita' demo.":
-      "Trauma/fracture protocol completed in demo mode.",
-    "Protocollo completato.": "Protocol completed.",
-    "Continua": "Continue",
-    "Prepara guanti": "Prepare gloves",
-    "Ho chiamato": "I called",
-    "Prendi presidio": "Take item",
-    "Fine": "Finish",
-    "Rispondi si' o no per continuare": "Answer yes or no to continue",
-    "Questo step non richiede una risposta si/no":
-      "This step does not require a yes/no answer",
-    "Nessun protocollo attivo": "No active protocol",
-  },
-};
-
-const PROTOCOL_I18N = {
-  en: {
-    protocols: {
-      unconscious: {
-        title: "Unconscious person",
-        steps: {
-          demo_notice: {
-            instruction: "Demonstration protocol. If the situation is serious or uncertain, call 112.",
-          },
-          scene_safety: {
-            instruction: "Approach only if the scene is safe. Prepare personal protection.",
-            action_label: "Prepare gloves",
-          },
-          gloves: {
-            instruction: "Put on disposable gloves before giving assistance.",
-          },
-          check_response: {
-            instruction: "Speak clearly and observe the reaction.",
-            question: "Does the person respond when called?",
-          },
-          responsive: {
-            instruction: "Keep the person calm and assess other symptoms. If they worsen, call 112.",
-          },
-          call_112: {
-            instruction: "Call 112 immediately and follow the operator's instructions.",
-            action_label: "I called",
-          },
-          check_breathing: {
-            instruction: "Watch for chest movement and listen for breathing without wasting time.",
-            question: "Is the person breathing normally?",
-          },
-          recovery_position: {
-            instruction: "If you do not suspect trauma, place them in the recovery position and keep monitoring.",
-          },
-          cpr: {
-            instruction: "Start CPR only if you are trained and follow the instructions from 112.",
-          },
-          thermal_blanket: {
-            instruction: "Protect the person from cold while waiting for help.",
-          },
-          end: {
-            instruction: "Demonstration protocol completed. Keep monitoring and follow 112.",
-            summary: "Unconscious person protocol completed in demo mode.",
-          },
-        },
-      },
-      bleeding: {
-        title: "Bleeding",
-        steps: {
-          demo_notice: {
-            instruction: "Demonstration protocol. If bleeding is severe, call 112.",
-          },
-          heavy_question: {
-            instruction: "Observe the wound without delaying the request for help if the situation is serious.",
-            question: "Is the bleeding heavy?",
-          },
-          gloves: {
-            instruction: "Put on gloves before applying pressure.",
-          },
-          gauze: {
-            instruction: "Prepare sterile gauze to protect the wound.",
-          },
-          bandage: {
-            instruction: "Prepare a bandage to keep the dressing in place.",
-          },
-          direct_pressure: {
-            instruction: "Apply direct pressure to the wound and stay in contact with 112 if needed.",
-            action_label: "Finish",
-          },
-          minor_instruction: {
-            instruction: "Protect the wound according to what is available and monitor changes.",
-            action_label: "Take item",
-          },
-          plaster: {
-            instruction: "Use gauze or a plaster to cover a minor wound.",
-          },
-          end: {
-            instruction: "Demonstration protocol completed. Monitor the person and ask for help if they worsen.",
-            summary: "Bleeding protocol completed in demo mode.",
-          },
-        },
-      },
-      burn: {
-        title: "Burn",
-        steps: {
-          demo_notice: {
-            instruction: "Demonstration protocol. If the burn is serious or you are unsure, call 112.",
-          },
-          severity_question: {
-            instruction: "Quickly assess location and extent without touching the area unnecessarily.",
-            question: "Is the burn extensive or does it involve face, hands, genitals or airways?",
-          },
-          call_112: {
-            instruction: "Call 112 and follow the operator's instructions.",
-          },
-          cooling: {
-            instruction: "Cool with running water if available, without delaying the 112 call when needed.",
-            action_label: "Take item",
-          },
-          sterile_cover: {
-            instruction: "Cover with non-adherent sterile material or a sterile drape according to availability.",
-          },
-          end: {
-            instruction: "Demonstration protocol completed. Keep monitoring and ask for help if the situation changes.",
-            summary: "Burn protocol completed in demo mode.",
-          },
-        },
-      },
-      trauma: {
-        title: "Trauma / fracture",
-        steps: {
-          demo_notice: {
-            instruction: "Demonstration protocol. Avoid unnecessary movement and call for help if the situation is serious.",
-          },
-          movement_question: {
-            instruction: "Observe the limb without forcing movement.",
-            question: "Can the person move the limb without intense pain?",
-          },
-          monitor: {
-            instruction: "Keep the person calm, limit effort and monitor pain.",
-          },
-          immobilize: {
-            instruction: "Immobilize as much as possible without forcing and call for help.",
-            action_label: "Take item",
-          },
-          triangular_bandage: {
-            instruction: "Prepare soft support to limit movement.",
-          },
-          bleeding_question: {
-            instruction: "Check whether there is associated bleeding.",
-            question: "Is there associated bleeding?",
-          },
-          bleeding_redirect: {
-            instruction: "Switch to the Bleeding protocol or ask 112 for support if bleeding is significant.",
-            action_label: "Finish",
-          },
-          end: {
-            instruction: "Demonstration protocol completed. Keep monitoring and limit movement.",
-            summary: "Trauma/fracture protocol completed in demo mode.",
-          },
-        },
-      },
-    },
-  },
+const INVENTORY_STATUS_LABELS = {
+  AVAILABLE: "Disponibile",
+  PENDING_USE: "Uso da confermare",
+  SUSPECTED_MISSING: "Probabile mancante",
+  USED: "Usato",
+  MISSING: "Mancante",
+  EXPIRED: "Scaduto",
 };
 
 async function request(path, options = {}) {
@@ -312,27 +224,9 @@ async function request(path, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || t("defaultError"));
+    throw new Error(data.error || UI_TEXT.defaultError);
   }
   return data;
-}
-
-function t(key) {
-  return UI_TEXT[currentLanguage]?.[key] || UI_TEXT.it[key] || key;
-}
-
-function format(text, values = {}) {
-  return Object.entries(values).reduce(
-    (result, [key, value]) => result.replaceAll(`{${key}}`, value),
-    text,
-  );
-}
-
-function translateText(value) {
-  if (!value) {
-    return value;
-  }
-  return TEXT_I18N[currentLanguage]?.[value] || value;
 }
 
 function escapeHtml(value) {
@@ -344,148 +238,81 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function languageBar() {
-  const buttons = LANGUAGES.map((language) => {
-    const active = language.code === currentLanguage;
-    return `
-      <button
-        class="flag-button ${active ? "active" : ""}"
-        type="button"
-        aria-pressed="${active}"
-        title="${escapeHtml(language.label)}"
-        onclick="ResQ.setLanguage('${language.code}')"
-      >
-        <span class="flag" aria-hidden="true">${language.flag}</span>
-        <span>${language.code.toUpperCase()}</span>
-      </button>
-    `;
-  }).join("");
-
-  // The logo replaces the old text label: the nav keeps its accessible name via
-  // aria-label, and the flags already carry the language affordance.
+function languageBar(state = null, emergencyMode = false) {
+  const version = state?.ux_version && !emergencyMode
+    ? `<span class="version-label">UX ${escapeHtml(state.ux_version)}</span>`
+    : "";
   return `
-    <nav class="language-bar" aria-label="${escapeHtml(t("languageLabel"))}">
-      <img class="bar-logo" src="/static/img/resq-logo.svg" alt="" aria-hidden="true">
-      <div class="flag-group">${buttons}</div>
+    <nav class="language-bar" aria-label="${escapeHtml(UI_TEXT.languageLabel)}">
+      <img class="bar-logo" src="/static/img/resq-logo.svg" alt="ResQ">
+      <div class="flag-group">
+        ${version}
+        <span class="flag-button active" aria-label="Italiano">
+          <span class="flag" aria-hidden="true">🇮🇹</span>
+          <span>IT</span>
+        </span>
+      </div>
     </nav>
   `;
 }
 
 function errorMarkup() {
-  if (!lastError) {
-    return "";
-  }
-  return `<div class="error-banner">${escapeHtml(lastError)}</div>`;
-}
-
-function getProtocolTranslation(protocolId) {
-  return PROTOCOL_I18N[currentLanguage]?.protocols?.[protocolId] || {};
-}
-
-function localizeProtocol(protocol) {
-  if (!protocol) {
-    return null;
-  }
-  const translation = getProtocolTranslation(protocol.id);
-  return {
-    ...protocol,
-    title: translation.title || protocol.title,
-    disclaimer: translation.disclaimer || translateText(protocol.disclaimer),
-  };
-}
-
-function localizeItem(item) {
-  if (!item) {
-    return null;
-  }
-  const translation = ITEM_I18N[currentLanguage]?.[item.refill_tag] || {};
-  return {
-    ...item,
-    name: translation.name || translateText(item.name),
-    compartment: translation.compartment || translateText(item.compartment),
-  };
-}
-
-function localizeStep(protocolId, step) {
-  if (!step) {
-    return null;
-  }
-  const protocolTranslation = getProtocolTranslation(protocolId);
-  const stepTranslation = protocolTranslation.steps?.[step.id] || {};
-  const localized = {
-    ...step,
-    instruction: stepTranslation.instruction || translateText(step.instruction),
-    action_label: stepTranslation.action_label || translateText(step.action_label) || t("continue"),
-  };
-
-  if (step.question) {
-    localized.question = stepTranslation.question || translateText(step.question);
-  }
-  if (step.summary) {
-    localized.summary = stepTranslation.summary || translateText(step.summary);
-  }
-  if (step.item) {
-    localized.item = localizeItem(step.item);
-  }
-  return localized;
+  return lastError ? `<div class="error-banner">${escapeHtml(lastError)}</div>` : "";
 }
 
 function diagnosticResult(testName) {
   const messages = {
-    led: t("diagnosticCompartmentsDone"),
-    refill_nfc: t("diagnosticRefillNfcDone"),
-    audio: t("diagnosticAudioDone"),
-    status: t("diagnosticStatusDone"),
+    led: UI_TEXT.diagnosticCompartmentsDone,
+    refill_nfc: UI_TEXT.diagnosticRefillNfcDone,
+    audio: UI_TEXT.diagnosticAudioDone,
+    status: UI_TEXT.diagnosticStatusDone,
   };
-  return messages[testName] || t("ready");
+  return messages[testName] || UI_TEXT.ready;
 }
 
 async function guarded(action) {
+  const viewBeforeAction = currentView;
   try {
     lastError = "";
     await action();
   } catch (error) {
-    lastError = translateText(error.message);
-    await sync();
+    lastError = error.message;
+    const state = await request("/api/state");
+    lastState = state;
+    if (viewBeforeAction === "maintenance") {
+      renderMaintenance();
+    } else {
+      renderFromState(state);
+    }
   }
-}
-
-async function loadProtocols() {
-  protocols = await request("/api/protocols");
 }
 
 async function sync() {
-  if (!protocols.length) {
-    await loadProtocols();
-  }
   const state = await request("/api/state");
   renderFromState(state);
 }
 
 function renderFromState(state) {
   lastState = state;
+  feedbackSequence = Math.max(
+    feedbackSequence,
+    Number(state.input_feedback?.sequence || 0),
+  );
   currentView = state.mode;
-
-  if (state.mode === "selecting") {
-    renderSelection();
+  if (state.mode === "home") {
+    compressionMetronome.stop();
+    audioGuide.stop();
+    renderHome(state);
     return;
   }
-  if (state.mode === "protocol") {
-    renderProtocol(state);
-    return;
-  }
-  if (state.mode === "completed") {
-    renderDone(state);
-    return;
-  }
-  renderHome();
+  renderEmergency(state);
 }
 
-function renderHome() {
+function renderHome(state = lastState) {
   currentView = "home";
   app.innerHTML = `
     <section class="screen home-screen">
-      ${languageBar()}
+      ${languageBar(state)}
       <div class="home-core">
         <div class="brand-block">
           <h1 class="brand">
@@ -500,241 +327,583 @@ function renderHome() {
         ${errorMarkup()}
         <div class="home-action">
           <button class="emergency-button" type="button" onclick="ResQ.startEmergency()">
-            ${escapeHtml(t("emergencyStart"))}
+            ${escapeHtml(UI_TEXT.emergencyStart)}
           </button>
           <button class="maintenance-button" type="button" onclick="ResQ.openDiagnostics()">
-            ${escapeHtml(t("maintenance"))}
+            <span>${escapeHtml(UI_TEXT.maintenance)}</span>
+            <small class="status-${escapeHtml(state.services?.inventory?.kit_status || "MAINTENANCE")}">
+              ${escapeHtml(kitStatusLabel(state.services?.inventory?.kit_status))}
+            </small>
           </button>
         </div>
       </div>
-      <p class="footer-note">
-        ${escapeHtml(t("footerNote"))}
-      </p>
+      <p class="footer-note">${escapeHtml(UI_TEXT.footerNote)}</p>
     </section>
   `;
 }
 
-function renderSelection() {
-  currentView = "selecting";
-  const cards = protocols
-    .map((protocol) => localizeProtocol(protocol))
-    .map(
-      (protocol) => `
-        <button class="choice-card" type="button" onclick="ResQ.startProtocol('${escapeHtml(protocol.id)}')">
-          <strong>${escapeHtml(protocol.title)}</strong>
-        </button>
-      `,
-    )
-    .join("");
+function renderEmergency(state) {
+  const materials = state.services?.materials || {};
+  const inventory = state.services?.inventory || {};
+  const ux = state.ux || {};
+  const callout = state.top_level_state === "EMERGENCY" ? call112Markup(ux.call112) : "";
+  const material = materialMarkup(materials, inventory, state.state_id);
+  const phase = phaseLabel(state.clinical_phase, state.top_level_state);
+  const repeat = headerRepeatMarkup(ux.repeat);
+  const screenMode = String(ux.screen_mode || "ACTION");
+  const screenModeClass = screenMode.toLowerCase().replaceAll("_", "-");
+  const statusStrip = statusStripMarkup(state);
+  const instruction = instructionMarkup(state, callout, material);
 
   app.innerHTML = `
-    <section class="screen selection-screen">
-      ${languageBar()}
-      <div class="topbar">
-        <div class="topbar-title">
-          <h1>${escapeHtml(t("selectionTitle"))}</h1>
-          <p class="disclaimer">${escapeHtml(t("selectionSubtitle"))}</p>
+    <section
+      class="screen protocol-screen emergency-screen screen-mode-${escapeHtml(screenModeClass)}"
+      data-state-id="${escapeHtml(state.state_id)}"
+      data-screen-mode="${escapeHtml(screenMode)}"
+    >
+      ${languageBar(state, true)}
+      <div class="state-header">
+        <div>
+          <div class="state-code">${escapeHtml(phase || "RESQ")}</div>
+          <h1>${escapeHtml(state.label)}</h1>
         </div>
-        <button class="ghost-button" type="button" onclick="ResQ.goHome()">${escapeHtml(t("home"))}</button>
+        ${repeat}
       </div>
       ${errorMarkup()}
-      <div class="selection-content">
-        <div class="selection-grid">${cards}</div>
+      ${statusStrip}
+      <div class="protocol-layout single-pane">
+        <section class="primary-pane clinical-pane ${ux.call112?.operator_active ? "operator-priority" : ""}">
+          <div class="instruction-block">
+            ${screenMode === "CALL_112" ? "" : `<div class="step-label">${escapeHtml(screenModeLabel(screenMode))}</div>`}
+            <div class="instruction-copy">
+              ${instruction}
+            </div>
+          </div>
+          ${softKeysMarkup(state.soft_keys || [], materials)}
+        </section>
       </div>
     </section>
   `;
+  compressionMetronome.update(ux.metronome);
+  audioGuide.sync(state.services?.ui_audio || {});
 }
 
-function protocolTopbar(state) {
-  const protocol = localizeProtocol(state.protocol);
+function screenModeLabel(mode) {
+  const labels = {
+    EVALUATION: "VALUTA",
+    ACTION: "FAI ORA",
+    CRITICAL_ACTION: "AZIONE CRITICA",
+  };
+  return labels[mode] || "FAI ORA";
+}
+
+function instructionMarkup(state, callout, material) {
+  const ux = state.ux || {};
+  if (ux.screen_mode === "CALL_112") {
+    return `
+      ${callout}
+      ${material}
+    `;
+  }
+  if (ux.aed_use?.active) {
+    const guidance = ux.aed_use.guidance || {};
+    return `
+      <div class="aed-use-guide" data-age-class="${escapeHtml(ux.aed_use.age_class || "UNKNOWN")}">
+        <h2><span aria-hidden="true">⚡</span>${escapeHtml(ux.aed_use.title || "USA IL DAE")}</h2>
+        <p>${escapeHtml(guidance.lead || state.prompt)}</p>
+        <strong>${escapeHtml(guidance.mode || "")}</strong>
+        <small>${escapeHtml(guidance.fallback || "")}</small>
+      </div>
+      ${material}
+    `;
+  }
+  if (ux.metronome?.active) {
+    const sentences = promptSentences(state.prompt);
+    return `
+      <div class="critical-cpr-core">
+        <h2>COMPRESSIONI</h2>
+        ${metronomeMarkup(ux.metronome, true)}
+        ${aedReminderMarkup(ux.aed_reminder)}
+        <p class="critical-lead">${escapeHtml(sentences[0] || state.prompt)}</p>
+        ${sentences.slice(1).length ? `
+          <div class="critical-guidance">
+            ${sentences.slice(1).map((sentence) => `<span>${escapeHtml(sentence)}</span>`).join("")}
+          </div>
+        ` : ""}
+      </div>
+      ${material}
+    `;
+  }
   return `
-    <div class="topbar">
-      <div class="topbar-title">
-        <h1>${escapeHtml(protocol.title)}</h1>
-        <p class="disclaimer">${escapeHtml(protocol.disclaimer)}</p>
-      </div>
-      <div class="action-row">
-        <button class="ghost-button" type="button" onclick="ResQ.back()">${escapeHtml(t("back"))}</button>
-        <button class="ghost-button" type="button" onclick="ResQ.repeatAudio()">${escapeHtml(t("repeatAudio"))}</button>
-      </div>
+    ${callout}
+    <p class="instruction">${escapeHtml(state.prompt)}</p>
+    ${material}
+  `;
+}
+
+function promptSentences(prompt) {
+  return String(prompt || "").match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map((part) => part.trim()) || [];
+}
+
+function aedReminderMarkup(reminder = {}) {
+  if (!reminder.visible) return "";
+  if (reminder.interactive && reminder.event) {
+    return `
+      <button
+        class="aed-reminder aed-availability-cta"
+        type="button"
+        data-event="${escapeHtml(reminder.event)}"
+        aria-label="Segnala DAE disponibile"
+        onclick="ResQ.sendUtilityEvent(this.dataset.event, this)"
+      >
+        <span aria-hidden="true">⚡</span>
+        <strong>${escapeHtml(reminder.label || "DAE DISPONIBILE")}</strong>
+      </button>
+    `;
+  }
+  return `
+    <div class="aed-reminder ${reminder.present ? "aed-present" : ""}" aria-label="Stato DAE">
+      <span aria-hidden="true">⚡</span>
+      <strong>${escapeHtml(reminder.label || "DAE APPENA DISPONIBILE")}</strong>
     </div>
   `;
 }
 
-function renderProtocol(state) {
-  currentView = "protocol";
-  const protocol = localizeProtocol(state.protocol);
-  const step = localizeStep(protocol.id, state.step);
-  if (step.type === "item") {
-    renderItem(state);
-    return;
+function statusStripMarkup(state) {
+  const items = [];
+  const call112 = state.ux?.call112 || {};
+  const materials = state.services?.materials || {};
+  if (call112.visible && call112.display_variant?.startsWith("compact")) {
+    items.push(`
+      <span class="status-strip-item status-call112 ${call112.display_variant === "compact_operator" ? "operator" : ""}">
+        <span aria-hidden="true">☎</span>
+        ${escapeHtml(call112.compact_label || "112 IN CORSO")}
+      </span>
+    `);
+  }
+  if (materials.active_led_zone) {
+    const compartment = String(materials.active_led_zone).split("_")[0];
+    items.push(`
+      <span class="status-strip-item status-material">
+        <span aria-hidden="true">▣</span>
+        ${escapeHtml(compartment)} ILLUMINATO
+      </span>
+    `);
+  }
+  if (!items.length) return "";
+  return `<div class="emergency-status-strip" aria-label="Stati operativi">${items.join("")}</div>`;
+}
+
+function headerRepeatMarkup(repeat = {}) {
+  if (repeat.mode !== "header_touch") return "";
+  return `
+    <button
+      class="header-repeat"
+      type="button"
+      aria-label="Ripeti istruzione"
+      onclick="ResQ.repeatInstruction()"
+      ${repeat.enabled ? "" : "disabled"}
+    >
+      <span aria-hidden="true">🔊↻</span>
+      <strong>RIPETI</strong>
+    </button>
+  `;
+}
+
+function phaseLabel(phase, topLevel) {
+  const labels = {
+    SCENE_SAFETY: "SICUREZZA DELLA SCENA",
+    MULTI_CASUALTY: "PIÙ PERSONE COINVOLTE",
+    LIFE_THREATS: "PERICOLI IMMEDIATI",
+    UNRESPONSIVE_BLS: "PERSONA NON RESPONSIVA",
+    RESPONSIVE_ABCDE: "VALUTAZIONE",
+    MONITORING: "MONITORAGGIO",
+    HANDOVER: "CONSEGNA AI SOCCORSI",
+    POST_EVENT: "CHIUSURA INTERVENTO",
+  };
+  return labels[phase] || labels[topLevel] || "INTERVENTO RESQ";
+}
+
+function typeLabel(type) {
+  const labels = {
+    decision: "VALUTA E SCEGLI",
+    decision_3: "SCEGLI",
+    action: "AZIONE",
+    material_action: "MATERIALE E AZIONE",
+    material_action_optional: "MATERIALE OPZIONALE",
+    material_fallback: "ALTERNATIVA MATERIALE",
+    loop: "CONTINUA",
+    monitor: "MONITORAGGIO",
+    terminal_monitor: "ATTESA E MONITORAGGIO",
+    terminal: "CONCLUSIONE",
+    maintenance: "REVISIONE",
+    resume: "RIPRISTINO",
+  };
+  return labels[type] || "ISTRUZIONE";
+}
+
+function call112Markup(presentation = {}) {
+  if (!presentation.visible || presentation.display_variant !== "call_now") return "";
+  const briefing = presentation.briefing;
+  const icons = {
+    where: "⌖",
+    what: "!",
+    people: CONTROL_ICONS.people,
+    condition: "♥",
+    hazards: "△",
+  };
+  const briefingMarkup = briefing ? `
+    <div class="call-briefing">
+      <h3>Dì all'operatore:</h3>
+      <ul>
+        ${(briefing.items || []).map((item) => {
+          const detail = item.observed && item.text
+            ? item.text
+            : item.display_fallback || item.fallback_prompt;
+          return `
+            <li class="briefing-item ${item.observed ? "observed" : "prompt"}">
+              <span aria-hidden="true">${icons[item.id] || "•"}</span>
+              <strong>${escapeHtml(item.label)}</strong>
+              <small>${escapeHtml(detail || "")}</small>
+            </li>
+          `;
+        }).join("")}
+      </ul>
+      <p>Rispondi alle domande e segui le istruzioni dell'operatore.</p>
+    </div>
+  ` : "";
+  return `
+    <section class="call112-panel call-now-focus" data-presentation-mode="call_now" aria-label="Attivazione chiamata 112">
+      <div class="call112-headline">
+        <strong>CHIAMA IL 112 ORA</strong>
+        <span aria-label="Numero unico di emergenza 112">112</span>
+      </div>
+      ${briefingMarkup}
+    </section>
+  `;
+}
+
+function metronomeMarkup(config = {}, critical = false) {
+  if (!config.active) return "";
+  return `
+    <div class="metronome-band ${critical ? "critical" : ""} ${config.operator_ducked ? "ducked" : ""}" aria-label="Metronomo compressioni">
+      <span class="metronome-pulse" aria-hidden="true"></span>
+      <span>
+        <strong>${escapeHtml(config.range_label || "100–120/min")}</strong>
+        <small>RITMO GUIDA · ${Number(config.target_bpm || 110)} BPM</small>
+      </span>
+    </div>
+  `;
+}
+
+function materialMarkup(materials, inventory, stateId) {
+  const request = materials.active_request || null;
+  const resolved = request?.resolved || null;
+  const pending = inventory.pending_items || [];
+  const reviewingInventory = stateId === "POST_EVENT_INVENTORY";
+  const reviewItems = (inventory.review_items || []).length
+    ? inventory.review_items
+    : pending;
+  if (!request && (!reviewingInventory || !reviewItems.length)) {
+    return "";
   }
 
-  const controls =
-    step.type === "question"
-      ? `
-        <div class="yes-no-row">
-          <button class="choice-button yes-button" type="button" onclick="ResQ.answer('yes')">${t("yes")}</button>
-          <button class="choice-button no-button" type="button" onclick="ResQ.answer('no')">${escapeHtml(t("no"))}</button>
-        </div>
-      `
-      : `
-        <div class="action-row">
-          <button class="primary-button" type="button" onclick="ResQ.next()">${escapeHtml(step.action_label)}</button>
-        </div>
-      `;
+  if (request && !resolved) {
+    return `
+      <div class="material-panel unavailable">
+        <strong>Nessun presidio ResQ compatibile disponibile</strong>
+      </div>
+    `;
+  }
 
-  const question = step.question
-    ? `<p class="question">${escapeHtml(step.question)}</p>`
+  const items = resolved ? [resolved] : reviewItems;
+  const labels = items.map((item) => {
+    const quantity = Number(item.quantity || 1);
+    const prefix = quantity > 1 ? `${quantity} × ` : "";
+    return `${prefix}${item.name_it}`;
+  });
+  const location = resolved
+    ? `<strong>Vano illuminato: ${escapeHtml(resolved.zone_name_it)} · Slot ${escapeHtml(resolved.slot)}</strong>`
     : "";
+  const fallback = resolved?.fallback_used
+    ? `<small class="material-fallback">Alternativa BOM disponibile</small>`
+    : "";
+  const inventoryEditor = reviewingInventory && inventory.correction_enabled
+    ? inventoryEditorMarkup(items)
+    : `<span>${escapeHtml(labels.join(" · "))}</span>`;
+  return `
+    <div class="material-panel">
+      ${location}
+      ${inventoryEditor}
+      ${fallback}
+    </div>
+  `;
+}
 
-  app.innerHTML = `
-    <section class="screen protocol-screen">
-      ${languageBar()}
-      ${protocolTopbar(state)}
-      ${errorMarkup()}
-      <div class="protocol-layout single-pane">
-        <section class="primary-pane">
-          <div class="instruction-block">
-            <div class="step-label">${escapeHtml(step.type === "question" ? t("question") : t("instruction"))}</div>
-            <div class="instruction-copy">
-              <p class="instruction">${escapeHtml(step.instruction)}</p>
-              ${question}
+function inventoryEditorMarkup(items) {
+  return `
+    <div class="inventory-editor">
+      ${items.map((item) => {
+        const quantity = Number(item.quantity || 0);
+        const maximum = Number(item.maximum ?? quantity);
+        return `
+          <div class="inventory-line">
+            <span>
+              ${escapeHtml(item.name_it)}
+              ${item.review_kind === "MISSING" ? "<small>Probabile mancante: indica quanti ne hai trovati</small>" : ""}
+            </span>
+            <div class="inventory-stepper" aria-label="Quantità ${escapeHtml(item.name_it)}">
+              <button
+                type="button"
+                aria-label="Riduci ${escapeHtml(item.name_it)}"
+                onclick="ResQ.correctInventory('${escapeHtml(item.sku)}', ${Math.max(0, quantity - 1)})"
+                ${quantity <= 0 ? "disabled" : ""}
+              >&minus;</button>
+              <strong>${quantity}</strong>
+              <button
+                type="button"
+                aria-label="Aumenta ${escapeHtml(item.name_it)}"
+                onclick="ResQ.correctInventory('${escapeHtml(item.sku)}', ${Math.min(maximum, quantity + 1)})"
+                ${quantity >= maximum ? "disabled" : ""}
+              >+</button>
             </div>
           </div>
-          ${controls}
-        </section>
-      </div>
-    </section>
+        `;
+      }).join("")}
+    </div>
   `;
 }
 
-function renderItem(state) {
-  currentView = "protocol";
-  const protocol = localizeProtocol(state.protocol);
-  const step = localizeStep(protocol.id, state.step);
-  const item = step.item;
-
-  app.innerHTML = `
-    <section class="screen item-screen">
-      ${languageBar()}
-      ${protocolTopbar(state)}
-      ${errorMarkup()}
-      <div class="protocol-layout single-pane">
-        <section class="item-pane">
-          <div class="step-label">${escapeHtml(t("requestedObject"))}</div>
-          <div class="item-copy">
-            <h2 class="item-title">${escapeHtml(t("take"))}: ${escapeHtml(item.name)}</h2>
-            <p class="compartment">${escapeHtml(t("compartment"))}: ${escapeHtml(item.compartment)}</p>
-          </div>
-          <div class="action-row">
-            <button class="primary-button" type="button" onclick="ResQ.next()">
-              ${escapeHtml(t("confirmItem"))}
-            </button>
-          </div>
-        </section>
+function softKeysMarkup(softKeys, materials = {}) {
+  const byPosition = new Map(softKeys.map((key) => [key.position, key]));
+  const lanes = ["left", "center", "right"].map((position) => {
+    const key = byPosition.get(position);
+    if (!key) {
+      return `<div class="soft-key-lane lane-empty" data-lane="${position}" aria-hidden="true"></div>`;
+    }
+    const unavailableTake = materials.state === "UNAVAILABLE"
+      && ["EV_MATERIAL_TAKEN", "EV_ITEM_TAKEN"].includes(key.event);
+    if (!key.enabled || !key.event || unavailableTake) {
+      return `<div class="soft-key-lane lane-empty" data-lane="${position}" aria-hidden="true"></div>`;
+    }
+    const icon = CONTROL_ICONS[key.icon] || "•";
+    const colorRole = String(key.color_role || "neutral").replace(/[^a-z_]/gi, "");
+    return `
+      <div class="soft-key-lane" data-lane="${position}">
+        <button
+          class="soft-key-button role-${escapeHtml(colorRole)}"
+          type="button"
+          data-event="${escapeHtml(key.event)}"
+          data-lane="${position}"
+          onclick="ResQ.sendLaneEvent('${position}', '${escapeHtml(key.event)}')"
+        >
+          <span class="control-icon" aria-hidden="true">${icon}</span>
+          <span class="control-label">${escapeHtml(key.label)}</span>
+        </button>
       </div>
-    </section>
-  `;
+    `;
+  });
+  return `<div class="soft-key-row" aria-label="Comandi disponibili">${lanes.join("")}</div>`;
 }
 
-function renderDone(state) {
-  currentView = "completed";
-  const protocol = localizeProtocol(state.protocol);
-  const step = localizeStep(protocol.id, state.step);
-  const items = state.requested_items
-    .map((item) => localizeItem(item))
-    .map(
-      (item) => `
-        <li>${escapeHtml(item.name)} - ${escapeHtml(item.compartment)}</li>
-      `,
-    )
-    .join("");
-  const answers = state.answers
-    .map(
-      (answer) => `
-        <li>${escapeHtml(translateText(answer.question))}: ${answer.answer === "yes" ? escapeHtml(t("yes").replaceAll("&Igrave;", "I")) : escapeHtml(t("no"))}</li>
-      `,
-    )
-    .join("");
-  const summary = translateText(state.summary) || step?.summary || t("continue");
+function kitStatusLabel(status) {
+  return KIT_STATUS_LABELS[status] || KIT_STATUS_LABELS.MAINTENANCE;
+}
+
+function inventoryStatusLabel(status) {
+  return INVENTORY_STATUS_LABELS[status] || status || "Da verificare";
+}
+
+function renderMaintenance() {
+  currentView = "maintenance";
+  const inventory = lastState?.services?.inventory || {};
+  const maintenance = inventory.maintenance || { zones: [], instances: [] };
+  const syncState = lastState?.services?.app_sync || {};
+  const syncLabel = syncState.queue_state === "SYNC_PENDING"
+    ? "DA SINCRONIZZARE"
+    : syncState.state === "CONNECTED" ? "SINCRONIZZATO" : "SOLO LOCALE";
+  const content = maintenanceTab === "inventory"
+    ? maintenanceInventoryMarkup(maintenance)
+    : diagnosticsMarkup();
 
   app.innerHTML = `
-    <section class="screen done-screen">
-      ${languageBar()}
+    <section class="screen maintenance-screen">
+      ${languageBar(lastState)}
       <div class="topbar">
         <div class="topbar-title">
-          <h1>${escapeHtml(t("endProtocol"))}</h1>
-          <p class="disclaimer">${escapeHtml(protocol?.disclaimer || "")}</p>
+          <h1>Manutenzione</h1>
+          <p class="disclaimer">BOM ${escapeHtml(lastState?.bom_version || "1.0")}</p>
         </div>
+        <button class="ghost-button" type="button" onclick="ResQ.closeMaintenance()">${escapeHtml(UI_TEXT.home)}</button>
       </div>
       ${errorMarkup()}
-      <section class="primary-pane">
+      <div class="maintenance-statusbar">
         <div>
-          <div class="step-label">${escapeHtml(protocol?.title || "ResQ")}</div>
-          <p class="instruction">${escapeHtml(summary)}</p>
-          <h2>${escapeHtml(t("requestedItems"))}</h2>
-          <ul class="summary-list">${items || `<li>${escapeHtml(t("noRequestedItems"))}</li>`}</ul>
-          <h2>${escapeHtml(t("answers"))}</h2>
-          <ul class="summary-list">${answers || `<li>${escapeHtml(t("noAnswers"))}</li>`}</ul>
+          <small>STATO KIT</small>
+          <strong class="status-${escapeHtml(maintenance.kit_status || "MAINTENANCE")}">
+            ${escapeHtml(kitStatusLabel(maintenance.kit_status))}
+          </strong>
         </div>
-        <div class="action-row">
-          <button class="danger-button" type="button" onclick="ResQ.goHome()">${escapeHtml(t("backHome"))}</button>
+        <div>
+          <small>RESQ CONNECT</small>
+          <strong>${escapeHtml(syncLabel)}</strong>
         </div>
-      </section>
+      </div>
+      <div class="maintenance-tabs" role="tablist">
+        <button
+          class="${maintenanceTab === "inventory" ? "active" : ""}"
+          type="button"
+          onclick="ResQ.setMaintenanceTab('inventory')"
+        >Inventario</button>
+        <button
+          class="${maintenanceTab === "diagnostics" ? "active" : ""}"
+          type="button"
+          onclick="ResQ.setMaintenanceTab('diagnostics')"
+        >Diagnostica</button>
+      </div>
+      <div class="maintenance-content">${content}</div>
     </section>
   `;
 }
 
-function renderDiagnostics() {
-  currentView = "diagnostics";
-  app.innerHTML = `
-    <section class="screen diagnostics-screen">
-      ${languageBar()}
-      <div class="topbar">
-        <div class="topbar-title">
-          <h1>${escapeHtml(t("diagnostics"))}</h1>
-          <p class="disclaimer">${escapeHtml(t("diagnosticsSubtitle"))}</p>
+function maintenanceInventoryMarkup(maintenance) {
+  const zones = maintenance.zones || [];
+  return `
+    <div class="inventory-summary">
+      <span>${Number(maintenance.instances?.length || 0)} SKU controllati</span>
+      <span>${Number(maintenance.expiry_counts?.EXPIRING_SOON || 0)} in scadenza</span>
+      <span>${Number(maintenance.expiry_counts?.EXPIRED || 0)} scaduti</span>
+    </div>
+    <div class="zone-list">
+      ${zones.map((zone) => maintenanceZoneMarkup(zone)).join("")}
+    </div>
+  `;
+}
+
+function maintenanceZoneMarkup(zone) {
+  return `
+    <section class="inventory-zone">
+      <div class="zone-heading">
+        <div>
+          <h2>${escapeHtml(zone.name_it)}</h2>
+          <span>${Number(zone.quantity_available)} / ${Number(zone.quantity_expected)} unità utilizzabili</span>
         </div>
-        <button class="ghost-button" type="button" onclick="ResQ.goHome()">${escapeHtml(t("home"))}</button>
+        <strong class="status-${escapeHtml(zone.status)}">${escapeHtml(kitStatusLabel(zone.status))}</strong>
       </div>
-      ${errorMarkup()}
-      <div class="diagnostic-content">
-        <div class="diagnostic-grid">
-          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(t("testCompartments"))}</button>
-          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('refill_nfc')">${escapeHtml(t("testRefillNfc"))}</button>
-          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('audio')">${escapeHtml(t("testAudio"))}</button>
-          <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('status')">${escapeHtml(t("appStatus"))}</button>
-        </div>
-        <div class="diagnostic-result">${escapeHtml(diagnosticMessage || t("ready"))}</div>
+      <div class="zone-items">
+        ${(zone.items || []).map((item) => maintenanceItemMarkup(item)).join("")}
       </div>
     </section>
   `;
 }
 
-function setLanguage(language) {
-  if (!LANGUAGES.some((item) => item.code === language)) {
-    return;
-  }
-  currentLanguage = language;
-  localStorage.setItem(LANGUAGE_KEY, currentLanguage);
-  document.documentElement.lang = currentLanguage;
-  if (currentDiagnosticTest) {
-    diagnosticMessage = diagnosticResult(currentDiagnosticTest);
-  }
-  if (currentView === "diagnostics") {
-    renderDiagnostics();
-    return;
-  }
-  if (lastState) {
-    renderFromState(lastState);
-    return;
-  }
-  sync();
+function maintenanceItemMarkup(item) {
+  const isEditing = editingSku === item.sku;
+  const expiry = expiryLabel(item);
+  const lot = item.lot ? `Lotto ${item.lot}` : "Lotto da inserire";
+  return `
+    <div class="maintenance-item status-border-${escapeHtml(item.health)}">
+      <div class="maintenance-item-main">
+        <div class="maintenance-item-copy">
+          <strong>${escapeHtml(item.name_it)}</strong>
+          <span>${escapeHtml(item.slot)} · ${escapeHtml(lot)} · ${escapeHtml(expiry)}</span>
+          <small class="instance-status status-${escapeHtml(item.status)}">${escapeHtml(inventoryStatusLabel(item.status))}</small>
+        </div>
+        <div class="maintenance-item-quantity">
+          <strong>${Number(item.quantity_usable)} / ${Number(item.quantity_expected)}</strong>
+          <span>${escapeHtml(item.unit)}</span>
+        </div>
+        <button
+          class="edit-instance-button"
+          type="button"
+          aria-label="Modifica ${escapeHtml(item.name_it)}"
+          onclick="ResQ.editInventoryInstance('${escapeHtml(item.sku)}')"
+        >${isEditing ? "CHIUDI" : "MODIFICA"}</button>
+      </div>
+      ${isEditing ? inventoryInstanceEditor(item) : ""}
+    </div>
+  `;
+}
+
+function inventoryInstanceEditor(item) {
+  const inserted = toLocalDateTime(item.inserted_at);
+  const statuses = ["AVAILABLE", "SUSPECTED_MISSING", "MISSING", "USED", "EXPIRED"];
+  return `
+    <div class="instance-editor" id="instance-editor-${escapeHtml(item.sku)}">
+      <label>
+        Quantità disponibile
+        <input name="quantity" type="number" min="0" value="${Number(item.quantity_available)}">
+      </label>
+      <label>
+        Stato
+        <select name="status">
+          ${statuses.map((status) => `
+            <option value="${status}" ${item.status === status ? "selected" : ""}>
+              ${escapeHtml(inventoryStatusLabel(status))}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+      <label>
+        Lotto
+        <input name="lot" type="text" value="${escapeHtml(item.lot || "")}" autocomplete="off">
+      </label>
+      <label>
+        Scadenza
+        <input name="expiry" type="date" value="${escapeHtml(item.expiry_date || "")}" ${item.expiry_tracking ? "" : "disabled"}>
+      </label>
+      <label>
+        Inserito il
+        <input name="inserted" type="datetime-local" value="${escapeHtml(inserted)}">
+      </label>
+      <button class="save-instance-button" type="button" onclick="ResQ.saveInventoryInstance('${escapeHtml(item.sku)}')">
+        SALVA
+      </button>
+    </div>
+  `;
+}
+
+function diagnosticsMarkup() {
+  return `
+    <div class="diagnostic-content">
+      <div class="diagnostic-grid">
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('led')">${escapeHtml(UI_TEXT.testCompartments)}</button>
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('refill_nfc')">${escapeHtml(UI_TEXT.testRefillNfc)}</button>
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('audio')">${escapeHtml(UI_TEXT.testAudio)}</button>
+        <button class="diagnostic-button" type="button" onclick="ResQ.runDiagnostic('status')">${escapeHtml(UI_TEXT.appStatus)}</button>
+      </div>
+      <div class="diagnostic-result">${escapeHtml(diagnosticMessage || UI_TEXT.ready)}</div>
+    </div>
+  `;
+}
+
+function expiryLabel(item) {
+  if (item.expiry_status === "NOT_TRACKED") return "Nessuna scadenza";
+  if (item.expiry_status === "UNKNOWN") return "Scadenza da inserire";
+  if (item.expiry_status === "EXPIRED") return item.expiry_date
+    ? `Scaduto ${formatDate(item.expiry_date)}`
+    : "Scaduto";
+  if (item.expiry_status === "EXPIRING_SOON") return `In scadenza ${formatDate(item.expiry_date)}`;
+  return `Scade ${formatDate(item.expiry_date)}`;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  const [year, month, day] = String(value).split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function toLocalDateTime(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
 }
 
 async function startEmergency() {
   await guarded(async () => {
+    await compressionMetronome.resumeFromGesture();
     diagnosticMessage = "";
     currentDiagnosticTest = "";
     const state = await request("/api/emergency/start", { method: "POST" });
@@ -742,42 +911,58 @@ async function startEmergency() {
   });
 }
 
-async function startProtocol(protocolId) {
+async function sendEvent(event) {
   await guarded(async () => {
-    const state = await request(`/api/protocols/${encodeURIComponent(protocolId)}/start`, {
+    await compressionMetronome.resumeFromGesture();
+    const state = await request("/api/events", {
       method: "POST",
+      body: JSON.stringify({ event }),
     });
     renderFromState(state);
   });
 }
 
-async function answer(value) {
-  await guarded(async () => {
-    const state = await request("/api/answer", {
-      method: "POST",
-      body: JSON.stringify({ answer: value }),
-    });
-    renderFromState(state);
-  });
+async function sendUtilityEvent(event, control) {
+  const now = performance.now();
+  if (!event || now < laneInputLockedUntil) return;
+  laneInputLockedUntil = now + 140;
+  control?.classList.remove("pressed");
+  requestAnimationFrame(() => control?.classList.add("pressed"));
+  window.setTimeout(() => control?.classList.remove("pressed"), 140);
+  await sendEvent(event);
 }
 
-async function next() {
-  await guarded(async () => {
-    const state = await request("/api/next", { method: "POST" });
-    renderFromState(state);
-  });
+function animateLane(lane) {
+  const control = document.querySelector(`.soft-key-button[data-lane="${lane}"]`);
+  if (!control) return false;
+  control.classList.remove("pressed");
+  requestAnimationFrame(() => control.classList.add("pressed"));
+  window.setTimeout(() => control.classList.remove("pressed"), 140);
+  return true;
 }
 
-async function back() {
-  await guarded(async () => {
-    const state = await request("/api/back", { method: "POST" });
-    renderFromState(state);
-  });
+async function sendLaneEvent(lane, event) {
+  const now = performance.now();
+  if (now < laneInputLockedUntil) return;
+  laneInputLockedUntil = now + 140;
+  animateLane(lane);
+  await sendEvent(event);
 }
 
-async function repeatAudio() {
+async function repeatInstruction() {
   await guarded(async () => {
+    await compressionMetronome.resumeFromGesture();
     const state = await request("/api/audio/repeat", { method: "POST" });
+    renderFromState(state);
+  });
+}
+
+async function correctInventory(sku, quantity) {
+  await guarded(async () => {
+    const state = await request("/api/inventory/correct", {
+      method: "POST",
+      body: JSON.stringify({ sku, quantity }),
+    });
     renderFromState(state);
   });
 }
@@ -795,22 +980,70 @@ function openDiagnostics() {
   lastError = "";
   diagnosticMessage = "";
   currentDiagnosticTest = "";
-  renderDiagnostics();
+  maintenanceTab = "inventory";
+  editingSku = null;
+  renderMaintenance();
+}
+
+function closeMaintenance() {
+  lastError = "";
+  editingSku = null;
+  renderHome(lastState);
+}
+
+function setMaintenanceTab(tab) {
+  maintenanceTab = tab === "diagnostics" ? "diagnostics" : "inventory";
+  editingSku = null;
+  renderMaintenance();
+}
+
+function editInventoryInstance(sku) {
+  editingSku = editingSku === sku ? null : sku;
+  renderMaintenance();
+}
+
+async function saveInventoryInstance(sku) {
+  await guarded(async () => {
+    const editor = document.getElementById(`instance-editor-${sku}`);
+    if (!editor) return;
+    const insertedValue = editor.querySelector('[name="inserted"]').value;
+    const payload = {
+      sku,
+      quantity_available: Number(editor.querySelector('[name="quantity"]').value),
+      status: editor.querySelector('[name="status"]').value,
+      lot: editor.querySelector('[name="lot"]').value,
+      expiry_date: editor.querySelector('[name="expiry"]').value || null,
+      inserted_at: insertedValue ? new Date(insertedValue).toISOString() : "",
+    };
+    const state = await request("/api/inventory/instance", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    lastState = state;
+    editingSku = null;
+    renderMaintenance();
+  });
 }
 
 async function runDiagnostic(testName) {
   await guarded(async () => {
-    await request(`/api/diagnostics/${encodeURIComponent(testName)}`, {
+    const result = await request(`/api/diagnostics/${encodeURIComponent(testName)}`, {
       method: "POST",
     });
     currentDiagnosticTest = testName;
-    diagnosticMessage = diagnosticResult(testName);
-    renderDiagnostics();
+    diagnosticMessage = result.message || diagnosticResult(testName);
+    lastState = result.state || lastState;
+    maintenanceTab = "diagnostics";
+    renderMaintenance();
   });
 }
 
 async function pressHardware(buttonName) {
+  const now = performance.now();
+  if (now < laneInputLockedUntil || !animateLane(buttonName)) return;
+  laneInputLockedUntil = now + 140;
   await guarded(async () => {
+    await compressionMetronome.resumeFromGesture();
     const state = await request(`/api/buttons/${encodeURIComponent(buttonName)}`, {
       method: "POST",
     });
@@ -818,41 +1051,56 @@ async function pressHardware(buttonName) {
   });
 }
 
+async function pollInputFeedback() {
+  if (feedbackPolling || currentView === "home" || currentView === "maintenance") return;
+  feedbackPolling = true;
+  try {
+    const feedback = await request("/api/input-feedback");
+    const sequence = Number(feedback.sequence || 0);
+    if (sequence > feedbackSequence) {
+      feedbackSequence = sequence;
+      animateLane(feedback.lane);
+      window.setTimeout(() => sync().catch(() => {}), 150);
+    }
+  } catch (_error) {
+    // Feedback polling is auxiliary and must never interrupt Emergency Mode.
+  } finally {
+    feedbackPolling = false;
+  }
+}
+
 document.addEventListener("keydown", (event) => {
   const tagName = event.target?.tagName || "";
   if (["INPUT", "TEXTAREA", "SELECT"].includes(tagName)) {
     return;
   }
-
-  const key = event.key.toLowerCase();
   const map = {
-    y: "yes",
-    s: "yes",
-    n: "no",
-    escape: "back",
-    backspace: "back",
-    r: "repeat_audio",
-    h: "home_emergency",
-    " ": "home_emergency",
+    "1": "left",
+    "2": "center",
+    "3": "right",
   };
-
-  if (map[key]) {
+  const button = map[event.key.toLowerCase()];
+  if (button) {
     event.preventDefault();
-    pressHardware(map[key]);
+    pressHardware(button);
   }
 });
 
 window.ResQ = {
-  setLanguage,
   startEmergency,
-  startProtocol,
-  answer,
-  next,
-  back,
-  repeatAudio,
+  sendEvent,
+  sendUtilityEvent,
+  sendLaneEvent,
+  repeatInstruction,
+  correctInventory,
   goHome,
   openDiagnostics,
+  closeMaintenance,
+  setMaintenanceTab,
+  editInventoryInstance,
+  saveInventoryInstance,
   runDiagnostic,
 };
 
 sync();
+window.setInterval(pollInputFeedback, 80);

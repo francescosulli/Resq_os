@@ -1,0 +1,957 @@
+{
+  "version": "v0_5",
+  "status": "prototype_not_clinically_validated",
+  "ui_rules": {
+    "max_soft_keys": 3,
+    "standard_decision": [
+      "NO",
+      "NON SO",
+      "SÌ"
+    ],
+    "action": [
+      "PROBLEMA",
+      "RIPETI",
+      "FATTO"
+    ],
+    "material": [
+      "NON TROVO",
+      "RIPETI/MOSTRA",
+      "FATTO/PRESO"
+    ],
+    "unknown_policy": "precautionary_branch"
+  },
+  "kit_policy": {
+    "medicines_in_kit": false,
+    "inventory_local": true,
+    "sync_resq_connect": true,
+    "paper_manual": false,
+    "paper_inventory_list": false
+  },
+  "materials": {
+    "PPE_GLOVES": {
+      "zone": "QUICK_ACCESS",
+      "qty_total": 8,
+      "inventory": true
+    },
+    "CPR_FACE_SHIELD": {
+      "zone": "QUICK_ACCESS",
+      "qty_total": 1,
+      "inventory": true
+    },
+    "MAJOR_BLEED_DRESSING": {
+      "zone": "C1_EMORRAGIE",
+      "preferred": [
+        "DRESSING_G",
+        "DRESSING_M",
+        "STERILE_COMPRESS"
+      ],
+      "inventory": true
+    },
+    "BLEED_FALLBACK": {
+      "zone": "C1_EMORRAGIE",
+      "preferred": [
+        "DRESSING_M",
+        "STERILE_COMPRESS"
+      ],
+      "inventory": true
+    },
+    "TOURNIQUET": {
+      "zone": "C1_EMORRAGIE",
+      "qty_total": 1,
+      "inventory": true
+    },
+    "HEMOSTATIC_DRESSING": {
+      "zone": "C1_EMORRAGIE",
+      "qty_total": 1,
+      "inventory": true
+    },
+    "STERILE_WOUND_DRESSING": {
+      "zone": "C2_FERITE",
+      "preferred": [
+        "DRESSING_K",
+        "DRESSING_M",
+        "STERILE_COMPRESS"
+      ],
+      "inventory": true
+    },
+    "WOUND_FALLBACK": {
+      "zone": "C2_FERITE",
+      "preferred": [
+        "STERILE_COMPRESS",
+        "PLASTER_SET"
+      ],
+      "inventory": true
+    },
+    "TRAUMA_SUPPORT": {
+      "zone": "C3_TRAUMA",
+      "preferred": [
+        "TRIANGULAR_BANDAGE",
+        "FIXATION_BANDAGE_FB6",
+        "FIXATION_BANDAGE_FB8"
+      ],
+      "inventory": true
+    },
+    "THERMAL_BLANKET": {
+      "zone": "C4_TERMICO",
+      "qty_total": 2,
+      "inventory": true
+    }
+  },
+  "states": {
+    "EM_START": {
+      "label": "Avvio emergenza",
+      "type": "action",
+      "prompt": "Avvio modalità soccorso.",
+      "buttons": [
+        "ESCI",
+        "RIPETI",
+        "INIZIA"
+      ],
+      "next": {
+        "INIZIA": "SCENE_SAFE"
+      }
+    },
+    "SCENE_SAFE": {
+      "label": "Sicurezza della scena",
+      "type": "decision",
+      "prompt": "È sicuro avvicinarsi? Controlla traffico, incendio, fumo/gas, elettricità, veicolo instabile e altri pericoli.",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "SCENE_UNSAFE",
+        "NON SO": "SCENE_UNSAFE",
+        "SÌ": "MULTI_CASUALTY"
+      }
+    },
+    "SCENE_UNSAFE": {
+      "label": "Scena non sicura",
+      "type": "action",
+      "prompt": "Non avvicinarti o allontanati dal pericolo. Chiama il 112 da una posizione sicura.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "SCENE_RECHECK"
+      }
+    },
+    "SCENE_RECHECK": {
+      "label": "Rivaluta sicurezza",
+      "type": "decision",
+      "prompt": "La scena è ora sicura?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "WAIT_SAFE",
+        "NON SO": "WAIT_SAFE",
+        "SÌ": "MULTI_CASUALTY"
+      }
+    },
+    "WAIT_SAFE": {
+      "label": "Attesa in sicurezza",
+      "type": "terminal_monitor",
+      "prompt": "Resta in sicurezza, segui il 112 e attendi i soccorsi.",
+      "buttons": [
+        "",
+        "RIPETI",
+        "RIVALUTA"
+      ],
+      "next": {
+        "RIVALUTA": "SCENE_RECHECK"
+      }
+    },
+    "MULTI_CASUALTY": {
+      "label": "Più persone coinvolte",
+      "type": "decision",
+      "prompt": "Ci sono più persone coinvolte o ferite?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "MASSIVE_BLEED",
+        "NON SO": "MASSIVE_BLEED",
+        "SÌ": "MULTI_ACTION"
+      }
+    },
+    "MULTI_ACTION": {
+      "label": "Incidente con più coinvolti",
+      "type": "action",
+      "prompt": "Chiama il 112 e comunica quante persone sono coinvolte. Se ci sono altri presenti, assegna compiti semplici. Poi valuta una persona alla volta.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "MASSIVE_BLEED"
+      }
+    },
+    "MASSIVE_BLEED": {
+      "label": "Emorragia molto abbondante",
+      "type": "decision",
+      "prompt": "Vedi un'emorragia molto abbondante, con sangue che scorre rapidamente o impregna subito i materiali?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "RESPONSIVE",
+        "NON SO": "BLEED_DIRECT_PRESSURE",
+        "SÌ": "BLEED_DIRECT_PRESSURE"
+      }
+    },
+    "BLEED_DIRECT_PRESSURE": {
+      "label": "Pressione diretta",
+      "type": "material_action",
+      "prompt": "Se disponibili immediatamente indossa i guanti. Applica forte pressione manuale diretta sulla ferita con la medicazione indicata.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "PPE_GLOVES",
+        "MAJOR_BLEED_DRESSING"
+      ],
+      "led_zone": "QUICK_ACCESS + C1_EMORRAGIE",
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "BLEED_CONTROLLED",
+        "NON TROVO": "MAT_FALLBACK_BLEED"
+      }
+    },
+    "MAT_FALLBACK_BLEED": {
+      "label": "Fallback emorragia",
+      "type": "material_fallback",
+      "prompt": "Usa la medicazione alternativa indicata. Se non disponibile, continua pressione diretta con il materiale più pulito e adatto disponibile e segui il 112.",
+      "buttons": [
+        "PROBLEMA",
+        "MOSTRA",
+        "FATTO"
+      ],
+      "materials": [
+        "BLEED_FALLBACK"
+      ],
+      "led_zone": "C1_EMORRAGIE",
+      "next": {
+        "FATTO": "BLEED_CONTROLLED"
+      }
+    },
+    "BLEED_CONTROLLED": {
+      "label": "Controllo emorragia",
+      "type": "decision",
+      "prompt": "Il sanguinamento è ora sotto controllo?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "RESPONSIVE",
+        "NO": "BLEED_LIMB",
+        "NON SO": "BLEED_LIMB"
+      }
+    },
+    "BLEED_LIMB": {
+      "label": "Emorragia grave di un arto",
+      "type": "decision",
+      "prompt": "L'emorragia grave proviene da un braccio o da una gamba?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "TOURNIQUET",
+        "NO": "HEMOSTATIC",
+        "NON SO": "HEMOSTATIC"
+      }
+    },
+    "TOURNIQUET": {
+      "label": "Tourniquet",
+      "type": "material_action",
+      "prompt": "Prendi il tourniquet dal compartimento illuminato. Segui l'animazione per applicarlo. Annota automaticamente l'ora e non allentarlo.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "TOURNIQUET"
+      ],
+      "led_zone": "C1_EMORRAGIE",
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "RESPONSIVE",
+        "NON TROVO": "HEMOSTATIC"
+      }
+    },
+    "HEMOSTATIC": {
+      "label": "Garza emostatica + pressione",
+      "type": "material_action",
+      "prompt": "Se indicato dal protocollo, usa la garza emostatica e continua forte pressione diretta. Segui il 112.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "HEMOSTATIC_DRESSING"
+      ],
+      "led_zone": "C1_EMORRAGIE",
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "RESPONSIVE",
+        "NON TROVO": "BLEED_DIRECT_PRESSURE"
+      }
+    },
+    "RESPONSIVE": {
+      "label": "Risposta della persona",
+      "type": "decision",
+      "prompt": "Parlale ad alta voce e tocca delicatamente una spalla. Risponde o reagisce?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "UNRESP_CALL",
+        "NON SO": "UNRESP_CALL",
+        "SÌ": "A_AIRWAY"
+      }
+    },
+    "UNRESP_CALL": {
+      "label": "Persona non responsiva",
+      "type": "action",
+      "prompt": "Chiama subito il 112 e metti il telefono in vivavoce. Continua la valutazione mentre attendi l'operatore.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "REQUIRED_PROMPT",
+      "next": {
+        "FATTO": "AGE_BLS"
+      }
+    },
+    "AGE_BLS": {
+      "label": "Categoria BLS",
+      "type": "decision_3",
+      "prompt": "Chi stai soccorrendo?",
+      "buttons": [
+        "LATTANTE",
+        "BAMBINO",
+        "ADULTO"
+      ],
+      "next": {
+        "LATTANTE": "PED_BREATH_CHECK",
+        "BAMBINO": "PED_BREATH_CHECK",
+        "ADULTO": "ADULT_BREATH_CHECK"
+      }
+    },
+    "ADULT_BREATH_CHECK": {
+      "label": "Respirazione adulto",
+      "type": "decision",
+      "prompt": "Apri le vie aeree e osserva la respirazione. Respira normalmente? Ansimare o respirare in modo agonico non è respirazione normale.",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "ADULT_CPR",
+        "NON SO": "ADULT_CPR",
+        "SÌ": "TRAUMA_UNRESP"
+      }
+    },
+    "ADULT_CPR": {
+      "label": "RCP adulto",
+      "type": "action",
+      "prompt": "Inizia subito compressioni toraciche al centro del torace. ResQ attiva il metronomo 100–120/min. Per utente non addestrato: compressioni continue, salvo diversa istruzione del 112.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "CONTINUA"
+      ],
+      "metronome": true,
+      "call112": "OPERATOR_PRIORITY",
+      "next": {
+        "CONTINUA": "AED_AVAILABLE"
+      }
+    },
+    "AED_AVAILABLE": {
+      "label": "DAE disponibile",
+      "type": "decision",
+      "prompt": "È disponibile un DAE?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "AED_USE",
+        "NO": "ADULT_CPR_LOOP",
+        "NON SO": "ADULT_CPR_LOOP"
+      }
+    },
+    "AED_USE": {
+      "label": "Uso DAE",
+      "type": "action",
+      "prompt": "Accendi il DAE e segui le sue istruzioni. Riduci al minimo le interruzioni delle compressioni.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "OPERATOR_PRIORITY",
+      "next": {
+        "FATTO": "ADULT_CPR_LOOP"
+      }
+    },
+    "ADULT_CPR_LOOP": {
+      "label": "Loop RCP adulto",
+      "type": "loop",
+      "prompt": "Continua RCP fino al subentro dei soccorsi, a ripresa di respirazione normale o impossibilità fisica.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "RESPIRA"
+      ],
+      "metronome": true,
+      "next": {
+        "RESPIRA": "TRAUMA_UNRESP"
+      }
+    },
+    "PED_BREATH_CHECK": {
+      "label": "Respirazione pediatrica",
+      "type": "decision",
+      "prompt": "Apri le vie aeree in modo appropriato e controlla respirazione e segni di vita per non più di 10 secondi. Respira normalmente?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "PED_5_BREATHS",
+        "NON SO": "PED_5_BREATHS",
+        "SÌ": "TRAUMA_UNRESP"
+      }
+    },
+    "PED_5_BREATHS": {
+      "label": "5 ventilazioni iniziali",
+      "type": "material_action",
+      "prompt": "Dai 5 ventilazioni iniziali. Usa la barriera CPR se disponibile e se non ritarda l'intervento.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "CPR_FACE_SHIELD"
+      ],
+      "led_zone": "QUICK_ACCESS",
+      "call112": "OPERATOR_PRIORITY",
+      "next": {
+        "FATTO": "PED_CPR",
+        "NON TROVO": "PED_CPR"
+      }
+    },
+    "PED_CPR": {
+      "label": "RCP pediatrica",
+      "type": "loop",
+      "prompt": "Inizia compressioni. Se non sei specificamente addestrato in PBLS: 30 compressioni e 2 ventilazioni. Frequenza 100–120/min; profondità circa un terzo del torace. Usa il DAE appena disponibile.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "RESPIRA"
+      ],
+      "materials": [
+        "CPR_FACE_SHIELD"
+      ],
+      "led_zone": "QUICK_ACCESS",
+      "metronome": true,
+      "call112": "OPERATOR_PRIORITY",
+      "next": {
+        "RESPIRA": "TRAUMA_UNRESP"
+      }
+    },
+    "TRAUMA_UNRESP": {
+      "label": "Trauma nella persona non responsiva",
+      "type": "decision",
+      "prompt": "C'è stato un incidente stradale o un trauma importante?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "NO": "RECOVERY_POSITION",
+        "NON SO": "TRAUMA_AIRWAY",
+        "SÌ": "TRAUMA_AIRWAY"
+      }
+    },
+    "RECOVERY_POSITION": {
+      "label": "Posizione laterale",
+      "type": "action",
+      "prompt": "Se appropriato, mettila in posizione laterale e controlla continuamente la respirazione.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "TRAUMA_AIRWAY": {
+      "label": "Trauma + vie aeree",
+      "type": "action",
+      "prompt": "Minimizza i movimenti non necessari. Mantieni libere le vie aeree: la respirazione ha priorità. Segui il 112.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "OPERATOR_PRIORITY",
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "A_AIRWAY": {
+      "label": "A – Vie aeree",
+      "type": "decision",
+      "prompt": "Riesce a parlare, piangere o tossire normalmente?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "B_BREATHING",
+        "NO": "CHOKE_SUDDEN",
+        "NON SO": "CHOKE_SUDDEN"
+      }
+    },
+    "CHOKE_SUDDEN": {
+      "label": "Possibile ostruzione",
+      "type": "decision",
+      "prompt": "Il problema è iniziato improvvisamente e ora non riesce a parlare, piangere o tossire efficacemente?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "CHOKE_AGE",
+        "NO": "B_BREATHING",
+        "NON SO": "B_BREATHING"
+      }
+    },
+    "CHOKE_AGE": {
+      "label": "Età ostruzione",
+      "type": "decision_3",
+      "prompt": "Chi stai soccorrendo?",
+      "buttons": [
+        "LATTANTE",
+        "BAMBINO",
+        "ADULTO"
+      ],
+      "next": {
+        "LATTANTE": "CHOKE_INFANT",
+        "BAMBINO": "CHOKE_CHILD",
+        "ADULTO": "CHOKE_ADULT"
+      }
+    },
+    "CHOKE_ADULT": {
+      "label": "Ostruzione adulto",
+      "type": "action",
+      "prompt": "Se la tosse è efficace incoraggialo a tossire. Se è inefficace: fino a 5 colpi interscapolari, poi fino a 5 compressioni addominali. Se persiste chiama 112. Se perde coscienza passa alla RCP.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "RISOLTO"
+      ],
+      "call112": "CONDITIONAL",
+      "next": {
+        "PEGGIORA": "UNRESP_CALL",
+        "RISOLTO": "MONITOR"
+      }
+    },
+    "CHOKE_CHILD": {
+      "label": "Ostruzione bambino",
+      "type": "action",
+      "prompt": "Se la tosse è efficace incoraggiala. Se è inefficace: fino a 5 colpi dorsali, poi fino a 5 compressioni addominali. Se persiste chiama 112. Se perde coscienza passa al BLS pediatrico.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "RISOLTO"
+      ],
+      "call112": "CONDITIONAL",
+      "next": {
+        "PEGGIORA": "UNRESP_CALL",
+        "RISOLTO": "MONITOR"
+      }
+    },
+    "CHOKE_INFANT": {
+      "label": "Ostruzione lattante",
+      "type": "action",
+      "prompt": "Se tosse o pianto sono efficaci lascia tossire/piangere. Se inefficaci: fino a 5 colpi dorsali, poi fino a 5 compressioni toraciche. Se persiste chiama 112. Se perde coscienza passa al BLS pediatrico.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "RISOLTO"
+      ],
+      "call112": "CONDITIONAL",
+      "next": {
+        "PEGGIORA": "UNRESP_CALL",
+        "RISOLTO": "MONITOR"
+      }
+    },
+    "B_BREATHING": {
+      "label": "B – Respirazione",
+      "type": "decision",
+      "prompt": "Ha una difficoltà importante a respirare o sta peggiorando rapidamente?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "BREATHING_SEVERE",
+        "NON SO": "BREATHING_SEVERE",
+        "NO": "C_CIRCULATION"
+      }
+    },
+    "BREATHING_SEVERE": {
+      "label": "Difficoltà respiratoria importante",
+      "type": "action",
+      "prompt": "Chiama il 112. Lascia la persona nella posizione in cui respira meglio. Non somministrare farmaci presenti nella valigetta: ResQ non contiene medicinali. Se possiede terapie personali, segui le indicazioni del 112.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "C_CIRCULATION": {
+      "label": "C – Circolo",
+      "type": "decision_3",
+      "prompt": "Quale situazione riconosci?",
+      "buttons": [
+        "SANGUE",
+        "MALORE",
+        "NESSUNA"
+      ],
+      "next": {
+        "SANGUE": "BLEED_DIRECT_PRESSURE",
+        "MALORE": "C_MALAISE",
+        "NESSUNA": "D_NEURO"
+      }
+    },
+    "C_MALAISE": {
+      "label": "Malore circolatorio",
+      "type": "decision",
+      "prompt": "Ha dolore/oppressione al torace, sta per svenire o appare molto pallido e sudato?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "C_CALL112",
+        "NON SO": "C_CALL112",
+        "NO": "D_NEURO"
+      }
+    },
+    "C_CALL112": {
+      "label": "Malore – 112",
+      "type": "action",
+      "prompt": "Fai sedere o sdraiare la persona nella posizione più confortevole, resta con lei e chiama il 112. ResQ non somministra medicinali.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED_IMMEDIATE",
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "D_NEURO": {
+      "label": "D – Neurologico",
+      "type": "decision",
+      "prompt": "È improvvisamente confusa, parla male, non muove bene un lato o ha avuto convulsioni?",
+      "buttons": [
+        "NO",
+        "NON SO",
+        "SÌ"
+      ],
+      "next": {
+        "SÌ": "D_NEURO_ACTION",
+        "NON SO": "D_NEURO_ACTION",
+        "NO": "E_EXPOSURE"
+      }
+    },
+    "D_NEURO_ACTION": {
+      "label": "Emergenza neurologica",
+      "type": "action",
+      "prompt": "Se sospetti ictus usa FAST e annota l'ora di inizio se nota. Durante convulsioni proteggi da pericoli, non bloccare i movimenti e non mettere nulla in bocca. Chiama 112 se la situazione è improvvisa/importante.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED",
+      "next": {
+        "PEGGIORA": "UNRESP_CALL",
+        "FATTO": "MONITOR"
+      }
+    },
+    "E_EXPOSURE": {
+      "label": "E – Trauma / ambiente",
+      "type": "decision_3",
+      "prompt": "Qual è il problema principale?",
+      "buttons": [
+        "TRAUMA",
+        "USTIONE/AMBIENTE",
+        "ALTRO"
+      ],
+      "next": {
+        "TRAUMA": "TRAUMA_SELECT",
+        "USTIONE/AMBIENTE": "ENV_SELECT",
+        "ALTRO": "LOCAL_CARE"
+      }
+    },
+    "TRAUMA_SELECT": {
+      "label": "Trauma",
+      "type": "decision_3",
+      "prompt": "Cosa richiede più attenzione?",
+      "buttons": [
+        "FERITA",
+        "ARTO",
+        "TESTA/TORACE"
+      ],
+      "next": {
+        "FERITA": "WOUND_CARE",
+        "ARTO": "LIMB_TRAUMA",
+        "TESTA/TORACE": "MAJOR_TRAUMA"
+      }
+    },
+    "WOUND_CARE": {
+      "label": "Ferita non massiva",
+      "type": "material_action",
+      "prompt": "Indossa i guanti se disponibili. Copri la ferita con la medicazione sterile indicata; se sanguina applica pressione.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "PPE_GLOVES",
+        "STERILE_WOUND_DRESSING"
+      ],
+      "led_zone": "QUICK_ACCESS + C2_FERITE",
+      "next": {
+        "FATTO": "MONITOR",
+        "NON TROVO": "WOUND_FALLBACK"
+      }
+    },
+    "WOUND_FALLBACK": {
+      "label": "Fallback ferita",
+      "type": "material_fallback",
+      "prompt": "Usa la medicazione alternativa mostrata. Se il sanguinamento diventa abbondante passa al ramo emorragia grave.",
+      "buttons": [
+        "PEGGIORA",
+        "MOSTRA",
+        "FATTO"
+      ],
+      "materials": [
+        "WOUND_FALLBACK"
+      ],
+      "led_zone": "C2_FERITE",
+      "next": {
+        "PEGGIORA": "BLEED_DIRECT_PRESSURE",
+        "FATTO": "MONITOR"
+      }
+    },
+    "LIMB_TRAUMA": {
+      "label": "Trauma arto",
+      "type": "material_action",
+      "prompt": "Non raddrizzare forzatamente. Sostieni l'arto nella posizione trovata e limita il movimento. Se utile usa benda o triangolare indicata.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "TRAUMA_SUPPORT"
+      ],
+      "led_zone": "C3_TRAUMA",
+      "next": {
+        "FATTO": "MONITOR",
+        "NON TROVO": "MONITOR"
+      }
+    },
+    "MAJOR_TRAUMA": {
+      "label": "Trauma testa/torace/colonna",
+      "type": "action",
+      "prompt": "Evita movimenti non necessari. Se ci sono difficoltà respiratorie, perdita di coscienza, peggioramento, ferita toracica aperta o trauma importante chiama il 112.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "RECOMMENDED",
+      "next": {
+        "PEGGIORA": "UNRESP_CALL",
+        "FATTO": "MONITOR"
+      }
+    },
+    "ENV_SELECT": {
+      "label": "Ustione / ambiente",
+      "type": "decision_3",
+      "prompt": "Quale situazione è più evidente?",
+      "buttons": [
+        "USTIONE",
+        "FREDDO",
+        "ALTRO"
+      ],
+      "next": {
+        "USTIONE": "BURN",
+        "FREDDO": "COLD",
+        "ALTRO": "ENV_OTHER"
+      }
+    },
+    "BURN": {
+      "label": "Ustione",
+      "type": "action",
+      "prompt": "Allontana la fonte se è sicuro. Raffredda l'ustione con acqua corrente appropriata. Non applicare ghiaccio direttamente. Dopo il raffreddamento proteggi con materiale sterile se indicato.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "STERILE_WOUND_DRESSING"
+      ],
+      "led_zone": "C2_FERITE",
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "COLD": {
+      "label": "Freddo / ipotermia",
+      "type": "material_action",
+      "prompt": "Ripara la persona da vento e terreno freddo. Coprila con la coperta isotermica indicata.",
+      "buttons": [
+        "NON TROVO",
+        "RIPETI",
+        "FATTO"
+      ],
+      "materials": [
+        "THERMAL_BLANKET"
+      ],
+      "led_zone": "C4_TERMICO",
+      "next": {
+        "FATTO": "MONITOR",
+        "NON TROVO": "MONITOR"
+      }
+    },
+    "ENV_OTHER": {
+      "label": "Altra esposizione",
+      "type": "action",
+      "prompt": "Per fumo/gas, sostanze chimiche, colpo di calore o acqua: prima evita di esporti al pericolo. Se l'esposizione è importante o ci sono sintomi, chiama il 112.",
+      "buttons": [
+        "PROBLEMA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "call112": "CONDITIONAL",
+      "next": {
+        "FATTO": "MONITOR"
+      }
+    },
+    "LOCAL_CARE": {
+      "label": "Problema locale",
+      "type": "action",
+      "prompt": "Non sono emerse minacce vitali immediate. Gestisci il problema locale con il materiale indicato e continua a monitorare.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "FATTO"
+      ],
+      "next": {
+        "PEGGIORA": "RESPONSIVE",
+        "FATTO": "MONITOR"
+      }
+    },
+    "MONITOR": {
+      "label": "Monitoraggio",
+      "type": "monitor",
+      "prompt": "Resta con la persona. Rivaluta risposta, respirazione, sanguinamento e peggioramento. Proteggila da caldo e freddo.",
+      "buttons": [
+        "PEGGIORA",
+        "RIPETI",
+        "STABILE"
+      ],
+      "next": {
+        "PEGGIORA": "RESPONSIVE",
+        "STABILE": "HANDOVER"
+      }
+    },
+    "HANDOVER": {
+      "label": "Consegna ai soccorsi",
+      "type": "terminal",
+      "prompt": "Continua l'assistenza fino al subentro dei soccorsi. Al termine, ResQ avvia la revisione dei materiali probabilmente utilizzati.",
+      "buttons": [
+        "",
+        "RIPETI",
+        "CHIUDI"
+      ],
+      "next": {
+        "CHIUDI": "POST_EVENT_INVENTORY"
+      }
+    },
+    "POST_EVENT_INVENTORY": {
+      "label": "Inventario post-intervento",
+      "type": "maintenance",
+      "prompt": "Conferma i materiali effettivamente utilizzati. ResQ aggiorna l'inventario locale e sincronizza ResQ Connect.",
+      "buttons": [
+        "CORREGGI",
+        "RIVEDI",
+        "CONFERMA"
+      ],
+      "next": {
+        "CONFERMA": "SESSION_END"
+      }
+    },
+    "SESSION_END": {
+      "label": "Fine sessione",
+      "type": "terminal",
+      "prompt": "Sessione chiusa. Il kit mostra lo stato di reintegro/manutenzione.",
+      "buttons": [
+        "",
+        "",
+        "HOME"
+      ],
+      "next": {
+        "HOME": "IDLE"
+      }
+    }
+  }
+}

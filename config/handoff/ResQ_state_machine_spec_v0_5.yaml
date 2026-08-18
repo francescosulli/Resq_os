@@ -1,0 +1,118 @@
+version: v0_5
+architecture: hierarchical_state_machine_plus_event_driven_services
+top_level_states:
+  BOOT:
+  - SELF_TEST
+  - READY
+  - DEGRADED
+  - FAULT_CRITICAL
+  IDLE:
+  - HOME
+  - MAINTENANCE
+  - APP_SYNC
+  EMERGENCY:
+    initial: INIT_SESSION
+    clinical_substates:
+    - SCENE_SAFETY
+    - MULTI_CASUALTY
+    - LIFE_THREATS
+    - UNRESPONSIVE_BLS
+    - RESPONSIVE_ABCDE
+    - MONITORING
+    - HANDOVER
+  POST_EVENT:
+  - INVENTORY_REVIEW
+  - SYNC_PENDING
+  - COMPLETE
+orthogonal_services:
+  Call112Service:
+    states:
+    - IDLE
+    - RECOMMENDED
+    - USER_CALLING
+    - OPERATOR_PRIORITY
+    - RETURN_TO_FLOW
+    principle: never autonomously places the call in prototype
+  MaterialService:
+    states:
+    - IDLE
+    - REQUESTED
+    - LED_ON
+    - MEDIA_SHOWN
+    - WAIT_CONFIRM
+    - FOUND
+    - FALLBACK
+    - UNAVAILABLE
+    inputs:
+    - MaterialRequest
+    outputs:
+    - LEDCommand
+    - UIAsset
+    - InventoryPendingUse
+  UIAudioService:
+    states:
+    - RENDERING
+    - PLAYING_AUDIO
+    - WAITING_INPUT
+    rule: one primary action per screen; max three mapped soft-keys
+  InventoryService:
+    states:
+    - READY
+    - PENDING_USE
+    - POST_EVENT_REVIEW
+    - DIRTY
+    - SYNC_PENDING
+    - SYNCED
+    sync_target: ResQ Connect
+  AppSyncService:
+    states:
+    - DISCONNECTED
+    - CONNECTING
+    - CONNECTED
+    - SYNCING
+    - ERROR
+    safety: must never block emergency mode
+events:
+- EV_START_EMERGENCY
+- EV_YES
+- EV_NO
+- EV_UNKNOWN
+- EV_DONE
+- EV_REPEAT
+- EV_PROBLEM
+- EV_MATERIAL_NOT_FOUND
+- EV_MATERIAL_TAKEN
+- EV_CALL112_STARTED
+- EV_OPERATOR_ACTIVE
+- EV_OPERATOR_ENDED
+- EV_RESPONSIVE
+- EV_UNRESPONSIVE
+- EV_NORMAL_BREATHING
+- EV_ABNORMAL_BREATHING
+- EV_WORSENING
+- EV_STABLE
+- EV_HANDOVER
+- EV_CLOSE_SESSION
+context:
+  session_id: uuid
+  current_patient: index
+  patient_count: optional_int
+  age_class: UNKNOWN|INFANT|CHILD|ADULT
+  call112_status: enum
+  operator_priority: bool
+  materials_probably_used: set[material_id]
+  active_material_request: optional
+  active_led_zone: optional
+  metronome_active: bool
+  last_transition_at: timestamp
+  country_profile: IT_prototype
+  kit_profile: ResQ_Automotive_v0_5
+invariants:
+- Emergency mode works offline.
+- App sync cannot block or alter clinical transitions.
+- No generative AI selects clinical transitions.
+- No medicine is stocked in the ResQ kit.
+- Unknown answers use a prevalidated precautionary transition.
+- Operator instructions have priority when 112 call is active.
+- Every material request has a predefined location and fallback policy.
+- Inventory is only finalized after post-event user confirmation.

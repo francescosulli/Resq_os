@@ -2,12 +2,16 @@
   "app": {
     "name": "ResQ",
     "subtitle": "Smart First Aid Case",
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "port": 8080,
     "kiosk": true
   },
   "logging": {
     "file": "logs/resq.log"
+  },
+  "persistence": {
+    "state_file": "data/session_state.json",
+    "event_log_file": "data/session_events.jsonl"
   },
   "display": {
     "native_width": 1280,
@@ -22,11 +26,10 @@
   "hardware": {
     "mode": "simulated",
     "buttons": {
-      "yes": ["y", "s"],
-      "no": ["n"],
-      "back": ["Escape", "Backspace"],
-      "repeat_audio": ["r"],
-      "home_emergency": [" ", "h"]
+      "soft_key_left": ["1", "n"],
+      "soft_key_center": ["2", "r"],
+      "soft_key_right": ["3", "y", "s"],
+      "start_emergency": [" ", "h"]
     }
   }
 }

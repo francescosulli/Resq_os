@@ -1,0 +1,49 @@
+version: '1.1'
+scope: UX/audio cadence only; clinical CPR logic remains Flow 1.0
+enabled_states:
+- ADULT_CPR
+- ADULT_CPR_LOOP
+- PED_CPR
+- PED_CPR_COMP_ONLY
+disabled_states:
+- PED_5_BREATHS
+- AED_USE
+metronome:
+  target_bpm: 110
+  guideline_range_bpm:
+  - 100
+  - 120
+  beat_interval_ms_nominal: 545.45
+  audio:
+    sound: short_nonverbal_click
+    must_not_sound_like_alarm_or_speech: true
+    continuous_during_compression_states: true
+  visual:
+    synchronized_pulse: true
+    show_target: 100–120/min
+    show_label: RITMO COMPRESSIONI
+cycle_management:
+  automatic_30_2_timing: false
+  reason: v1.1 adds cadence feedback only and must not introduce new timing/transition
+    logic.
+  pediatric_30_2: Keep the existing 30:2 instruction visible in PED_CPR; do not automatically
+    insert or time ventilation pauses.
+operator_priority:
+  visual_pulse: continue
+  metronome_audio: continue_ducked
+  default_duck_db: -12
+  resq_spoken_instruction: suppress_or_pause
+  note: Audio ducking level is a UX default to validate in simulation, not a clinical
+    threshold.
+implementation:
+  preferred_scheduler: audio_clock_or_WebAudio_timeline_not_UI_setInterval_for_cadence
+  metronome_lifecycle: start_on_enter_enabled_state_stop_immediately_on_exit
+  repeat_instruction: if operator inactive, replay voice without stopping cadence;
+    temporarily lower click level if necessary
+source_basis:
+- source: European Resuscitation Council Guidelines 2025 for Everyone
+  url: https://www.erc.edu/media/p5ymaeej/gl2025_layperson_book_ipdf-v11-e.pdf
+  basis: Chest compression rate 100–120/min.
+- source: ILCOR CoSTR — Defining Chest Compression Components
+  url: https://costr.ilcor.org/document/bls-2501-defining-chest-compression-components
+  basis: Manual chest compression rate recommendation 100–120/min.

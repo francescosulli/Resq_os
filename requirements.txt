@@ -1,3 +1,1 @@
-# ResQ v0 usa solo la libreria standard di Python.
-# Il file resta presente per install/update script e future dipendenze.
-
+PyYAML>=6.0,<7.0

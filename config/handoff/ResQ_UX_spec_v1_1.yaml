@@ -1,0 +1,2012 @@
+version: '1.1'
+release: ResQ Prototype Architecture 1.1 — UX & Human Factors
+scope: presentation_only
+inherits:
+  clinical_flow: ResQ_flow_nodes_v1_2.json
+  state_machine: ResQ_state_machine_spec_v1_2.yaml
+  automotive_bom: ResQ_Automotive_BOM_v1_0.yaml
+authority_rule: This UX specification may change rendering, display labels, control positions and service presentation, but MUST NOT change clinical targets, prompts, MaterialRequests, BOM quantities or clinical semantics.
+states:
+  EM_START:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: ESCI
+        semantic_event: EV_CLOSE_SESSION
+        source_button_label: ESCI
+        color_role: neutral
+        icon: exit
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: INIZIA
+        semantic_event: EV_START_EMERGENCY
+        source_button_label: INIZIA
+        color_role: success
+        icon: choice
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: none
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  SCENE_SAFE:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  SCENE_UNSAFE:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  SCENE_RECHECK:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  WAIT_SAFE:
+    state_type: terminal_monitor
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RIVALUTA
+        semantic_event: EV_DONE
+        source_button_label: RIVALUTA
+        color_role: support
+        icon: refresh
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  MULTI_CASUALTY:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  MULTI_ACTION:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  MASSIVE_BLEED:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  BLEED_DIRECT_PRESSURE:
+    state_type: material_action
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: NON TROVO
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C1_EMORRAGIE
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: CRITICAL_ACTION
+  MAT_FALLBACK_BLEED:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  BLEED_CONTROLLED:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  BLEED_LIMB:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  TOURNIQUET:
+    state_type: material_action
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: NON TROVO
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C1_EMORRAGIE
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: CRITICAL_ACTION
+  HEMOSTATIC:
+    state_type: material_action
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: NON TROVO
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C1_EMORRAGIE
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: CRITICAL_ACTION
+  RESPONSIVE:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_UNRESPONSIVE
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNRESPONSIVE
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_RESPONSIVE
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  UNRESP_CALL:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: HO CHIAMATO
+        semantic_event: EV_CALL112_STARTED
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: call_now_focus
+    call112_policy_from_flow: REQUIRED_PROMPT
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - Display HO CHIAMATO while dispatching the existing EV_CALL112_STARTED / underlying FATTO semantics.
+    screen_mode: CALL_112
+  AGE_BLS:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: LATTANTE
+        semantic_event: EV_SELECT_INFANT
+        source_button_label: LATTANTE
+        color_role: neutral
+        icon: infant
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: BAMBINO
+        semantic_event: EV_SELECT_CHILD
+        source_button_label: BAMBINO
+        color_role: neutral
+        icon: child
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: ADULTO
+        semantic_event: EV_SELECT_ADULT
+        source_button_label: ADULTO
+        color_role: neutral
+        icon: adult
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  ADULT_BREATH_CHECK:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_ABNORMAL_BREATHING
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_ABNORMAL_BREATHING
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_NORMAL_BREATHING
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  ADULT_CPR:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: DAE DISPONIBILE
+        semantic_event: EV_AED_AVAILABLE
+        source_button_label: null
+        color_role: warning
+        icon: lightning
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: CONTINUA
+        semantic_event: EV_DONE
+        source_button_label: CONTINUA
+        color_role: success
+        icon: arrow_right
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: center_softkey
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 110_bpm_audio_visual
+    material_led_zone_from_flow: null
+    notes:
+    - Metronome is cadence feedback only; no new clinical transition or automatic ventilation timing.
+    - DAE availability is the LEFT touch/hardware lane and emits the approved parallel event.
+    aed_availability_control:
+      display_label: DAE DISPONIBILE
+      semantic_event: EV_AED_AVAILABLE
+      color_role: warning
+      icon: lightning
+      touch_enabled: true
+      physical_enabled: true
+      physical_lane: left
+    screen_mode: CRITICAL_ACTION
+  AED_AVAILABLE:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  AED_USE:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: CRITICAL_ACTION
+  ADULT_CPR_LOOP:
+    state_type: loop
+    primary_controls:
+      left:
+        display_label: DAE DISPONIBILE
+        semantic_event: EV_AED_AVAILABLE
+        source_button_label: null
+        color_role: warning
+        icon: lightning
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RESPIRA
+        semantic_event: EV_NORMAL_BREATHING
+        source_button_label: RESPIRA
+        color_role: success
+        icon: lungs
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 110_bpm_audio_visual
+    material_led_zone_from_flow: null
+    notes:
+    - Metronome is cadence feedback only; no new clinical transition or automatic ventilation timing.
+    - DAE availability is the LEFT touch/hardware lane and emits the approved parallel event.
+    aed_availability_control:
+      display_label: DAE DISPONIBILE
+      semantic_event: EV_AED_AVAILABLE
+      color_role: warning
+      icon: lightning
+      touch_enabled: true
+      physical_enabled: true
+      physical_lane: left
+    screen_mode: CRITICAL_ACTION
+  PED_BREATH_CHECK:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_ABNORMAL_BREATHING
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_ABNORMAL_BREATHING
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_NORMAL_BREATHING
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  PED_5_BREATHS:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PROBLEMA
+        semantic_event: EV_PROBLEM
+        source_button_label: PROBLEMA
+        color_role: danger
+        icon: alert
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  PED_CPR:
+    state_type: loop
+    prompt_when_aed_present: Continua con 30 compressioni e 2 ventilazioni. Frequenza 100–120/min; profondità circa un terzo del torace.
+    primary_controls:
+      left:
+        display_label: PROBLEMA
+        semantic_event: EV_PROBLEM
+        source_button_label: PROBLEMA
+        color_role: danger
+        icon: alert
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: DAE DISPONIBILE
+        semantic_event: EV_AED_AVAILABLE
+        source_button_label: null
+        color_role: warning
+        icon: lightning
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RESPIRA
+        semantic_event: EV_NORMAL_BREATHING
+        source_button_label: RESPIRA
+        color_role: success
+        icon: lungs
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 110_bpm_audio_visual
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    - Metronome is cadence feedback only; no new clinical transition or automatic ventilation timing.
+    - DAE availability is the CENTER touch/hardware lane and emits the approved parallel event.
+    aed_availability_control:
+      display_label: DAE DISPONIBILE
+      semantic_event: EV_AED_AVAILABLE
+      color_role: warning
+      icon: lightning
+      touch_enabled: true
+      physical_enabled: true
+      physical_lane: center
+    screen_mode: CRITICAL_ACTION
+  TRAUMA_UNRESP:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  RECOVERY_POSITION:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  TRAUMA_AIRWAY:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  A_AIRWAY:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  CHOKE_SUDDEN:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  CHOKE_AGE:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: LATTANTE
+        semantic_event: EV_SELECT_INFANT
+        source_button_label: LATTANTE
+        color_role: neutral
+        icon: infant
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: BAMBINO
+        semantic_event: EV_SELECT_CHILD
+        source_button_label: BAMBINO
+        color_role: neutral
+        icon: child
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: ADULTO
+        semantic_event: EV_SELECT_ADULT
+        source_button_label: ADULTO
+        color_role: neutral
+        icon: adult
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  CHOKE_ADULT:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RISOLTO
+        semantic_event: EV_STABLE
+        source_button_label: RISOLTO
+        color_role: success
+        icon: check_circle
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: conditional_no_call_now_banner
+    call112_policy_from_flow: CONDITIONAL
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  CHOKE_CHILD:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RISOLTO
+        semantic_event: EV_STABLE
+        source_button_label: RISOLTO
+        color_role: success
+        icon: check_circle
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: conditional_no_call_now_banner
+    call112_policy_from_flow: CONDITIONAL
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  CHOKE_INFANT:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RISOLTO
+        semantic_event: EV_STABLE
+        source_button_label: RISOLTO
+        color_role: success
+        icon: check_circle
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: conditional_no_call_now_banner
+    call112_policy_from_flow: CONDITIONAL
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  B_BREATHING:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  BREATHING_SEVERE:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  C_CIRCULATION:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: SANGUE
+        semantic_event: EV_SELECT_SANGUE
+        source_button_label: SANGUE
+        color_role: neutral
+        icon: droplet
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: MALORE
+        semantic_event: EV_SELECT_MALORE
+        source_button_label: MALORE
+        color_role: neutral
+        icon: heart_pulse
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: NESSUNA
+        semantic_event: EV_SELECT_NESSUNA
+        source_button_label: NESSUNA
+        color_role: neutral
+        icon: minus
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  C_MALAISE:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  C_CALL112:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: call_now_panel
+    call112_policy_from_flow: RECOMMENDED_IMMEDIATE
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  D_NEURO:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  D_NEURO_ACTION:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: prominent_call_panel
+    call112_policy_from_flow: RECOMMENDED
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  E_EXPOSURE:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: TRAUMA
+        semantic_event: EV_SELECT_TRAUMA
+        source_button_label: TRAUMA
+        color_role: neutral
+        icon: bandage
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: USTIONE/AMBIENTE
+        semantic_event: EV_SELECT_USTIONE_AMBIENTE
+        source_button_label: USTIONE/AMBIENTE
+        color_role: neutral
+        icon: environment
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: ALTRO
+        semantic_event: EV_SELECT_ALTRO
+        source_button_label: ALTRO
+        color_role: neutral
+        icon: more
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  TRAUMA_SELECT:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: FERITA
+        semantic_event: EV_SELECT_FERITA
+        source_button_label: FERITA
+        color_role: neutral
+        icon: bandage
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: ARTO
+        semantic_event: EV_SELECT_ARTO
+        source_button_label: ARTO
+        color_role: neutral
+        icon: limb
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: TESTA/TORACE
+        semantic_event: EV_SELECT_TESTA_TORACE
+        source_button_label: TESTA/TORACE
+        color_role: neutral
+        icon: body
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  WOUND_CARE:
+    state_type: material_action
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: NON TROVO
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C2_FERITE
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  WOUND_FALLBACK:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  LIMB_TRAUMA:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  MAJOR_TRAUMA:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: prominent_call_panel
+    call112_policy_from_flow: RECOMMENDED
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  ENV_SELECT:
+    state_type: decision_3
+    primary_controls:
+      left:
+        display_label: USTIONE
+        semantic_event: EV_SELECT_USTIONE
+        source_button_label: USTIONE
+        color_role: neutral
+        icon: flame
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: FREDDO
+        semantic_event: EV_SELECT_FREDDO
+        source_button_label: FREDDO
+        color_role: neutral
+        icon: snowflake
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: ALTRO
+        semantic_event: EV_SELECT_ALTRO
+        source_button_label: ALTRO
+        color_role: neutral
+        icon: more
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  BURN:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  COLD:
+    state_type: material_action
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: NON TROVO
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C4_TERMICO
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  ENV_OTHER:
+    state_type: action
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: conditional_no_call_now_banner
+    call112_policy_from_flow: CONDITIONAL
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  LOCAL_CARE:
+    state_type: action
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_DONE
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  MONITOR:
+    state_type: monitor
+    primary_controls:
+      left:
+        display_label: PEGGIORA
+        semantic_event: EV_WORSENING
+        source_button_label: PEGGIORA
+        color_role: danger
+        icon: trend_down
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: STABILE
+        semantic_event: EV_STABLE
+        source_button_label: STABILE
+        color_role: success
+        icon: shield_check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  HANDOVER:
+    state_type: terminal
+    primary_controls:
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: CHIUDI
+        semantic_event: EV_HANDOVER
+        source_button_label: CHIUDI
+        color_role: neutral
+        icon: close
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: center_softkey
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  POST_EVENT_INVENTORY:
+    state_type: maintenance
+    primary_controls:
+      left:
+        display_label: CORREGGI
+        semantic_event: EV_PROBLEM
+        source_button_label: CORREGGI
+        color_role: warning
+        icon: edit
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: CONFERMA
+        semantic_event: EV_CLOSE_SESSION
+        source_button_label: CONFERMA
+        color_role: success
+        icon: check_circle
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 2
+    repeat_mode: none
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  SESSION_END:
+    state_type: terminal
+    primary_controls:
+      right:
+        display_label: HOME
+        semantic_event: EV_CLOSE_SESSION
+        source_button_label: HOME
+        color_role: neutral
+        icon: home
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 1
+    repeat_mode: none
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes: []
+    screen_mode: ACTION
+  WOUND_PPE:
+    state_type: material_action_optional
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: null
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: SALTA
+        semantic_event: EV_SKIP
+        source_button_label: SALTA
+        color_role: neutral
+        icon: skip
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: QUICK_ACCESS
+    notes:
+    - 'SALTA and NON TROVO are distinct: SALTA skips optional material; NON TROVO asks MaterialService for BOM fallback.'
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  PED_FACE_SHIELD_OPTION:
+    state_type: material_action_optional
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: null
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: SALTA
+        semantic_event: EV_SKIP
+        source_button_label: SALTA
+        color_role: neutral
+        icon: skip
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: PRESO
+        semantic_event: EV_ITEM_TAKEN
+        source_button_label: PRESO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: QUICK_ACCESS
+    notes:
+    - 'SALTA and NON TROVO are distinct: SALTA skips optional material; NON TROVO asks MaterialService for BOM fallback.'
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  PED_CPR_MODE:
+    state_type: decision
+    primary_controls:
+      left:
+        display_label: 'NO'
+        semantic_event: EV_NO
+        source_button_label: 'NO'
+        color_role: danger
+        icon: x
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: NON SO
+        semantic_event: EV_UNKNOWN
+        source_button_label: NON SO
+        color_role: warning
+        icon: help
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: SÌ
+        semantic_event: EV_YES
+        source_button_label: SÌ
+        color_role: danger
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: null
+    notes:
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: EVALUATION
+  PED_CPR_COMP_ONLY:
+    state_type: loop
+    prompt_when_aed_present: Se non riesci o non vuoi eseguire ventilazioni, continua con compressioni toraciche senza interromperti. Frequenza 100–120/min; profondità circa un terzo del torace.
+    primary_controls:
+      left:
+        display_label: DAE DISPONIBILE
+        semantic_event: EV_AED_AVAILABLE
+        source_button_label: null
+        color_role: warning
+        icon: lightning
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: RIPETI
+        semantic_event: EV_REPEAT
+        source_button_label: RIPETI
+        color_role: support
+        icon: speaker_repeat
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: RESPIRA
+        semantic_event: EV_NORMAL_BREATHING
+        source_button_label: RESPIRA
+        color_role: success
+        icon: lungs
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: center_softkey
+    call112_presentation: operator_priority_if_active_else_contextual_operator_panel
+    call112_policy_from_flow: OPERATOR_PRIORITY
+    cpr_metronome: 110_bpm_audio_visual
+    material_led_zone_from_flow: null
+    notes:
+    - Metronome is cadence feedback only; no new clinical transition or automatic ventilation timing.
+    - DAE availability is the LEFT touch/hardware lane and emits the approved parallel event.
+    aed_availability_control:
+      display_label: DAE DISPONIBILE
+      semantic_event: EV_AED_AVAILABLE
+      color_role: warning
+      icon: lightning
+      touch_enabled: true
+      physical_enabled: true
+      physical_lane: left
+    screen_mode: CRITICAL_ACTION
+  BURN_COVER:
+    state_type: material_action_optional
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: null
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: SALTA
+        semantic_event: EV_SKIP
+        source_button_label: SALTA
+        color_role: neutral
+        icon: skip
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C2_FERITE
+    notes:
+    - 'SALTA and NON TROVO are distinct: SALTA skips optional material; NON TROVO asks MaterialService for BOM fallback.'
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
+  LIMB_SUPPORT_OPTION:
+    state_type: material_action_optional
+    primary_controls:
+      left:
+        display_label: NON TROVO
+        semantic_event: EV_MATERIAL_NOT_FOUND
+        source_button_label: null
+        color_role: danger
+        icon: search_off
+        touch_enabled: true
+        physical_enabled: true
+      center:
+        display_label: SALTA
+        semantic_event: EV_SKIP
+        source_button_label: SALTA
+        color_role: neutral
+        icon: skip
+        touch_enabled: true
+        physical_enabled: true
+      right:
+        display_label: FATTO
+        semantic_event: EV_MATERIAL_TAKEN
+        source_button_label: FATTO
+        color_role: success
+        icon: check
+        touch_enabled: true
+        physical_enabled: true
+    active_primary_count: 3
+    repeat_mode: header_touch
+    call112_presentation: hidden_unless_service_call_already_active
+    call112_policy_from_flow: null
+    cpr_metronome: 'off'
+    material_led_zone_from_flow: C3_TRAUMA
+    notes:
+    - 'SALTA and NON TROVO are distinct: SALTA skips optional material; NON TROVO asks MaterialService for BOM fallback.'
+    - RIPETI stays available as a separate utility and does not consume a primary physical lane.
+    screen_mode: ACTION
